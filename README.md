@@ -34,8 +34,8 @@ O projeto é organizado da seguinte forma:
 ├── rede.html
 ├── styles.css
 ├── terminal.html
-├── wind.html (Cópia de terminal.html - Redundante)
-└── z.html (Cópia de terminal.html - Redundante)
+├── wind.html
+└── z.html (Cópia de arquivos.html - Redundante)
 ```
 
 ### Descrição dos Arquivos:
