@@ -1,0 +1,794 @@
+/* ========================================
+   STYLE.CSS PADRÃO - SISTEMA CYBERPUNK
+   Arquivo CSS unificado para todas as páginas
+   ======================================== */
+
+/* Importação de fontes */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap');
+
+/* Reset e configurações básicas */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+/* Corpo da página */
+body {
+    background-color: #0a0a16;
+    color: #00f3ff;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ========================================
+   EFEITOS VISUAIS CYBERPUNK
+   ======================================== */
+
+/* Linha de varredura animada */
+.scanline {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to bottom, 
+                rgba(0, 243, 255, 0.5), 
+                rgba(0, 243, 255, 0));
+    box-shadow: 0 0 10px #00f3ff;
+    animation: scan 4s linear infinite;
+    z-index: 100;
+}
+
+@keyframes scan {
+    0% { top: 0%; }
+    100% { top: 100%; }
+}
+
+/* Efeito de ruído */
+.noise {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDBoNDB2NDBIMHoiLz48L3N2Zz4=');
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 999;
+}
+
+/* Linhas de grade */
+.grid-lines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.1;
+    background-image: 
+        linear-gradient(to right, #00f3ff 1px, transparent 1px),
+        linear-gradient(to bottom, #00f3ff 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* ========================================
+   LAYOUT E CONTAINERS
+   ======================================== */
+
+/* Container principal */
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 2rem;
+    position: relative;
+}
+
+/* Cabeçalho */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border-bottom: 1px solid #00f3ff;
+    box-shadow: 0 5px 15px rgba(0, 243, 255, 0.2);
+}
+
+/* ========================================
+   TIPOGRAFIA
+   ======================================== */
+
+/* Título principal */
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #ff003c;
+    text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
+    animation: glitch 5s infinite;
+}
+
+/* Subtítulo */
+.subtitle {
+    color: #00f3ff;
+    font-size: 1.2rem;
+    letter-spacing: 0.3em;
+}
+
+/* Efeito glitch nos títulos */
+@keyframes glitch {
+    0% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+    95% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+    96% { text-shadow: -2px 0 0 cyan, 2px 0 0 magenta; }
+    97% { text-shadow: 2px 0 0 cyan, -2px 0 0 magenta; }
+    98% { text-shadow: -2px 0 0 cyan, 2px 0 0 magenta; }
+    99% { text-shadow: 2px 0 0 cyan, -2px 0 0 magenta; }
+    100% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+}
+
+/* ========================================
+   NAVEGAÇÃO
+   ======================================== */
+
+/* Menu de navegação */
+.nav-menu {
+    display: flex;
+    gap: 1.5rem;
+}
+
+/* Itens do menu */
+.nav-item {
+    color: #00f3ff;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid #00f3ff;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    transition: all 0.3s;
+}
+
+.nav-item:hover, 
+.nav-item.active {
+    background-color: rgba(0, 243, 255, 0.2);
+    box-shadow: 0 0 15px #00f3ff;
+}
+
+/* ========================================
+   CARDS E PAINÉIS
+   ======================================== */
+
+/* Card base */
+.card, .metric-card, .game-card, .stat-card {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid #00f3ff;
+    box-shadow: 0 0 15px #00f3ff;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.card:hover, .metric-card:hover, .game-card:hover, .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 243, 255, 0.5);
+}
+
+/* Efeito de gradiente nos cards */
+.card::before, .metric-card::before, .game-card::before, .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), transparent);
+    pointer-events: none;
+}
+
+/* Cabeçalho do card */
+.card-header, .panel-header {
+    color: #ff003c;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 5px #ff003c;
+    border-bottom: 1px solid #00f3ff;
+    padding-bottom: 0.5rem;
+}
+
+/* Valor do card */
+.card-value, .stat-value {
+    color: #00f3ff;
+    font-size: 2.5rem;
+    text-shadow: 0 0 10px #00f3ff;
+    margin: 1rem 0;
+    text-align: center;
+    font-family: 'Orbitron', sans-serif;
+}
+
+/* ========================================
+   BOTÕES
+   ======================================== */
+
+/* Botão base */
+.btn, .control-btn, .action-btn, .tool-button {
+    background: rgba(0, 243, 255, 0.2);
+    border: 1px solid #00f3ff;
+    color: #00f3ff;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Share Tech Mono', monospace;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn:hover, .control-btn:hover, .action-btn:hover, .tool-button:hover {
+    background: rgba(0, 243, 255, 0.4);
+    box-shadow: 0 0 10px #00f3ff;
+}
+
+/* Variações de botões */
+.btn.start, .control-btn.start {
+    background: rgba(0, 255, 102, 0.2);
+    border-color: #00ff66;
+}
+
+.btn.start:hover, .control-btn.start:hover {
+    background: rgba(0, 255, 102, 0.4);
+    box-shadow: 0 0 10px #00ff66;
+}
+
+.btn.warning, .control-btn.warning, .action-btn.warning {
+    background: rgba(255, 204, 0, 0.2);
+    border-color: #ffcc00;
+}
+
+.btn.warning:hover, .control-btn.warning:hover, .action-btn.warning:hover {
+    background: rgba(255, 204, 0, 0.4);
+    box-shadow: 0 0 10px #ffcc00;
+}
+
+.btn.danger, .control-btn.danger, .action-btn.danger {
+    background: rgba(255, 0, 60, 0.2);
+    border-color: #ff003c;
+}
+
+.btn.danger:hover, .control-btn.danger:hover, .action-btn.danger:hover {
+    background: rgba(255, 0, 60, 0.4);
+    box-shadow: 0 0 10px #ff003c;
+}
+
+/* ========================================
+   FORMULÁRIOS E INPUTS
+   ======================================== */
+
+/* Input base */
+input, textarea, select, .input {
+    background: rgba(0, 243, 255, 0.1);
+    border: 1px solid #00f3ff;
+    color: #00f3ff;
+    padding: 0.5rem;
+    font-family: 'Share Tech Mono', monospace;
+    outline: none;
+}
+
+input:focus, textarea:focus, select:focus, .input:focus {
+    border-color: #ff003c;
+    box-shadow: 0 0 10px #ff003c;
+}
+
+/* Input de senha */
+input[type="password"] {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #00f3ff;
+    color: #00f3ff;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    width: 100%;
+    outline: none;
+    letter-spacing: 0.1em;
+}
+
+input[type="password"]:focus {
+    border-bottom: 1px solid #ff003c;
+    box-shadow: 0 1px 0 0 #ff003c;
+}
+
+/* ========================================
+   TABELAS
+   ======================================== */
+
+/* Tabela de dados */
+.data-table, table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+}
+
+.data-table th, table th {
+    background-color: rgba(0, 243, 255, 0.1);
+    color: #ff003c;
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #00f3ff;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.data-table td, table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+    color: #00f3ff;
+}
+
+.data-table tr:hover, table tr:hover {
+    background-color: rgba(0, 243, 255, 0.1);
+}
+
+/* ========================================
+   LISTAS
+   ======================================== */
+
+/* Lista base */
+ul, ol {
+    list-style: none;
+}
+
+/* Item de lista */
+.list-item, .activity-item, .contact-item, .menu-item {
+    padding: 0.8rem;
+    border-bottom: 1px solid rgba(0, 243, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.list-item:hover, .activity-item:hover, .contact-item:hover, .menu-item:hover {
+    background-color: rgba(0, 243, 255, 0.1);
+    border-color: #00f3ff;
+}
+
+.list-item.active, .contact-item.active, .menu-item.active {
+    background-color: rgba(0, 243, 255, 0.2);
+    border-left: 3px solid #ff003c;
+}
+
+/* ========================================
+   INDICADORES DE STATUS
+   ======================================== */
+
+/* Indicador de status */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 1rem;
+}
+
+.status-online {
+    background-color: #00ff66;
+    box-shadow: 0 0 8px #00ff66;
+}
+
+.status-warning {
+    background-color: #ffcc00;
+    box-shadow: 0 0 8px #ffcc00;
+}
+
+.status-offline {
+    background-color: #ff003c;
+    box-shadow: 0 0 8px #ff003c;
+}
+
+/* Badge de status */
+.status-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+
+.status-active {
+    background-color: rgba(0, 255, 102, 0.2);
+    color: #00ff66;
+}
+
+.status-inactive {
+    background-color: rgba(255, 0, 60, 0.2);
+    color: #ff003c;
+}
+
+/* ========================================
+   ELEMENTOS DE INTERFACE
+   ======================================== */
+
+/* Terminal */
+.terminal {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 1.5rem;
+    border: 1px solid #00f3ff;
+    box-shadow: inset 0 0 10px #00f3ff;
+    margin-bottom: 2rem;
+    overflow-y: auto;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.terminal-line, .output-line {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+}
+
+.terminal-line.command, .output-line.command {
+    color: #00ff66;
+}
+
+.terminal-line.error, .output-line.error {
+    color: #ff003c;
+}
+
+.terminal-line.system, .output-line.system {
+    color: #ffcc00;
+}
+
+.terminal-line.response, .output-line.response {
+    color: #00f3ff;
+}
+
+/* Prompt */
+.prompt {
+    color: #ff003c;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+/* ========================================
+   GRÁFICOS E VISUALIZAÇÕES
+   ======================================== */
+
+/* Container de gráfico */
+.chart-container {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid #00f3ff;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    height: 300px;
+}
+
+.chart-title {
+    color: #ff003c;
+    font-family: 'Orbitron', sans-serif;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #00f3ff;
+    padding-bottom: 0.5rem;
+}
+
+/* Gráfico de barras */
+.chart, .card-chart {
+    height: 100px;
+    margin-top: 1rem;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.chart-bar {
+    flex: 1;
+    background: linear-gradient(to top, #ff003c, #00f3ff);
+    opacity: 0.7;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+}
+
+/* ========================================
+   ELEMENTOS FIXOS
+   ======================================== */
+
+/* Logo cyberpunk */
+.cyber-logo {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border: 1px solid #00f3ff;
+    box-shadow: 0 0 10px #00f3ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: rotate 10s linear infinite;
+    z-index: 1000;
+}
+
+.cyber-logo::before {
+    content: 'Δ';
+    font-size: 2rem;
+    color: #ff003c;
+    text-shadow: 0 0 5px #ff003c;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* HUD */
+.hud {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: 15px;
+    z-index: 1000;
+}
+
+.hud-item {
+    background: rgba(0, 243, 255, 0.2);
+    border: 1px solid #00f3ff;
+    color: #00f3ff;
+    padding: 10px 15px;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+}
+
+/* Relógio */
+.clock {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    color: #ff003c;
+    text-shadow: 0 0 5px #ff003c;
+    z-index: 1000;
+}
+
+/* ========================================
+   ANIMAÇÕES E EFEITOS
+   ======================================== */
+
+/* Efeito de piscar */
+.blink {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Efeito de pulso */
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* Efeito de digitação */
+.typing {
+    animation: typing 2s steps(40, end);
+}
+
+@keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+/* ========================================
+   GRIDS E LAYOUTS
+   ======================================== */
+
+/* Grid de dashboard */
+.dashboard-grid, .games-grid, .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Grid de 3 colunas */
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Grid de 2 colunas */
+.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+/* Card largo */
+.wide-card {
+    grid-column: span 2;
+}
+
+/* Card completo */
+.full-card {
+    grid-column: 1 / -1;
+}
+
+/* ========================================
+   SIDEBAR E PAINÉIS
+   ======================================== */
+
+/* Sidebar */
+.sidebar, .control-panel, .contacts-panel {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid #00f3ff;
+    box-shadow: 0 0 15px #00f3ff;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar::before, .control-panel::before, .contacts-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), transparent);
+    pointer-events: none;
+}
+
+/* ========================================
+   RESPONSIVIDADE
+   ======================================== */
+
+/* Tablets */
+@media (max-width: 1100px) {
+    .dashboard-grid, .games-grid, .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .wide-card {
+        grid-column: span 1;
+    }
+    
+    .container {
+        max-width: 100%;
+        padding: 1.5rem;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .dashboard-grid, .games-grid, .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .nav-menu {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .container {
+        padding: 1rem;
+    }
+    
+    .hud {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .hud-item {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .clock {
+        font-size: 1.2rem;
+    }
+    
+    .cyber-logo {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .cyber-logo::before {
+        font-size: 1.5rem;
+    }
+}
+
+/* Mobile pequeno */
+@media (max-width: 480px) {
+    .nav-item {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+    }
+    
+    .card, .metric-card, .game-card, .stat-card {
+        padding: 1rem;
+    }
+    
+    .btn, .control-btn, .action-btn, .tool-button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ========================================
+   UTILITÁRIOS
+   ======================================== */
+
+/* Classes de texto */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+/* Classes de cor */
+.text-primary { color: #00f3ff; }
+.text-secondary { color: #ff003c; }
+.text-success { color: #00ff66; }
+.text-warning { color: #ffcc00; }
+.text-danger { color: #ff003c; }
+
+/* Classes de margem */
+.m-0 { margin: 0; }
+.m-1 { margin: 1rem; }
+.m-2 { margin: 2rem; }
+.mb-1 { margin-bottom: 1rem; }
+.mb-2 { margin-bottom: 2rem; }
+.mt-1 { margin-top: 1rem; }
+.mt-2 { margin-top: 2rem; }
+
+/* Classes de padding */
+.p-0 { padding: 0; }
+.p-1 { padding: 1rem; }
+.p-2 { padding: 2rem; }
+
+/* Classes de display */
+.d-none { display: none; }
+.d-block { display: block; }
+.d-flex { display: flex; }
+.d-grid { display: grid; }
+
+/* Classes de flexbox */
+.flex-center { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+}
+.flex-between { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+.flex-column { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+
+/* ========================================
+   FIM DO ARQUIVO CSS
+   ======================================== */
+

@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Rede - Sistema Cyberpunk</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        body {
+            background-color: #0a0a16;
+            color: #00f3ff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to bottom, 
+                        rgba(0, 243, 255, 0.5), 
+                        rgba(0, 243, 255, 0));
+            box-shadow: 0 0 10px #00f3ff;
+            animation: scan 4s linear infinite;
+            z-index: 100;
+        }
+        
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+        
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDBoNDB2NDBIMHoiLz48L3N2Zz4=');
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        .grid-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+            background-image: 
+                linear-gradient(to right, #00f3ff 1px, transparent 1px),
+                linear-gradient(to bottom, #00f3ff 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-bottom: 1px solid #00f3ff;
+            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.2);
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #ff003c;
+            text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
+            animation: glitch 5s infinite;
+        }
+        
+        .subtitle {
+            color: #00f3ff;
+            font-size: 1.2rem;
+            letter-spacing: 0.3em;
+        }
+        
+        @keyframes glitch {
+            0% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+            95% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+            96% { text-shadow: -2px 0 0 cyan, 2px 0 0 magenta; }
+            97% { text-shadow: 2px 0 0 cyan, -2px 0 0 magenta; }
+            98% { text-shadow: -2px 0 0 cyan, 2px 0 0 magenta; }
+            99% { text-shadow: 2px 0 0 cyan, -2px 0 0 magenta; }
+            100% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .nav-item {
+            color: #00f3ff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 15px #00f3ff;
+        }
+        
+        .network-monitor {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            height: 70vh;
+        }
+        
+        .control-panel {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .control-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .panel-header {
+            color: #ff003c;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 5px #ff003c;
+            border-bottom: 1px solid #00f3ff;
+            padding-bottom: 0.5rem;
+        }
+        
+        .filter-section {
+            margin-bottom: 2rem;
+        }
+        
+        .filter-input {
+            width: 100%;
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .filter-input:focus {
+            outline: none;
+            border-color: #ff003c;
+            box-shadow: 0 0 10px #ff003c;
+        }
+        
+        .protocol-filters {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .protocol-btn {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .protocol-btn.active {
+            background: rgba(0, 243, 255, 0.3);
+            border-color: #ff003c;
+            color: #ff003c;
+        }
+        
+        .protocol-btn:hover {
+            background: rgba(0, 243, 255, 0.2);
+        }
+        
+        .control-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: auto;
+        }
+        
+        .control-btn {
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .control-btn:hover {
+            background: rgba(0, 243, 255, 0.4);
+            box-shadow: 0 0 10px #00f3ff;
+        }
+        
+        .control-btn.capture {
+            background: rgba(255, 0, 60, 0.2);
+            border-color: #ff003c;
+        }
+        
+        .control-btn.capture:hover {
+            background: rgba(255, 0, 60, 0.4);
+            box-shadow: 0 0 10px #ff003c;
+        }
+        
+        .visualization-area {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .visualization-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .viz-header {
+            padding: 1rem;
+            border-bottom: 1px solid #00f3ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .viz-title {
+            color: #ff003c;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .viz-stats {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-value {
+            color: #00f3ff;
+            font-size: 1.2rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .stat-label {
+            color: #ff003c;
+            font-size: 0.8rem;
+        }
+        
+        .network-canvas {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #network-map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .packet {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            z-index: 10;
+        }
+        
+        .packet.tcp {
+            background-color: #00f3ff;
+            box-shadow: 0 0 10px #00f3ff;
+        }
+        
+        .packet.udp {
+            background-color: #ff003c;
+            box-shadow: 0 0 10px #ff003c;
+        }
+        
+        .packet.icmp {
+            background-color: #00ff66;
+            box-shadow: 0 0 10px #00ff66;
+        }
+        
+        .packet.http {
+            background-color: #ffcc00;
+            box-shadow: 0 0 10px #ffcc00;
+        }
+        
+        .node {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            color: #0a0a16;
+            font-weight: bold;
+        }
+        
+        .node.core {
+            background-color: #ff003c;
+            box-shadow: 0 0 15px #ff003c;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .node.router {
+            background-color: #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+        }
+        
+        .node.server {
+            background-color: #00ff66;
+            box-shadow: 0 0 15px #00ff66;
+        }
+        
+        .node.workstation {
+            background-color: #ffcc00;
+            box-shadow: 0 0 15px #ffcc00;
+        }
+        
+        .connection {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, #00f3ff, transparent);
+            transform-origin: 0 0;
+            z-index: 1;
+        }
+        
+        .packet-list {
+            height: 250px;
+            overflow-y: auto;
+            border-top: 1px solid #00f3ff;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .packet-item {
+            padding: 0.8rem;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr 80px 100px;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .packet-item:hover {
+            background-color: rgba(0, 243, 255, 0.1);
+        }
+        
+        .packet-time {
+            color: #ff003c;
+        }
+        
+        .packet-source {
+            color: #00f3ff;
+        }
+        
+        .packet-destination {
+            color: #00f3ff;
+        }
+        
+        .packet-size {
+            color: #ffcc00;
+            text-align: right;
+        }
+        
+        .packet-protocol {
+            text-align: center;
+            border-radius: 3px;
+            padding: 0.2rem 0.5rem;
+        }
+        
+        .protocol-tcp {
+            background-color: rgba(0, 243, 255, 0.2);
+            color: #00f3ff;
+        }
+        
+        .protocol-udp {
+            background-color: rgba(255, 0, 60, 0.2);
+            color: #ff003c;
+        }
+        
+        .protocol-icmp {
+            background-color: rgba(0, 255, 102, 0.2);
+            color: #00ff66;
+        }
+        
+        .protocol-http {
+            background-color: rgba(255, 204, 0, 0.2);
+            color: #ffcc00;
+        }
+        
+        .hud {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+        
+        .hud-item {
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 10px 15px;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+        
+        .clock {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: #ff003c;
+            text-shadow: 0 0 5px #ff003c;
+            z-index: 1000;
+        }
+        
+        .cyber-logo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 10px #00f3ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: rotate 10s linear infinite;
+            z-index: 1000;
+        }
+        
+        .cyber-logo::before {
+            content: 'Δ';
+            font-size: 2rem;
+            color: #ff003c;
+            text-shadow: 0 0 5px #ff003c;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .traffic-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .chart-container {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            height: 250px;
+        }
+        
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+        }
+        
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, #00f3ff, #ff003c);
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 1200px) {
+            .network-monitor {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            
+            .traffic-charts {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .packet-item {
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: auto auto;
+            }
+            
+            .packet-time {
+                grid-column: 1 / 2;
+            }
+            
+            .packet-protocol {
+                grid-column: 2 / 3;
+                grid-row: 1 / 2;
+                justify-self: end;
+            }
+            
+            .packet-source {
+                grid-column: 1 / 2;
+                grid-row: 2 / 3;
+            }
+            
+            .packet-destination {
+                grid-column: 2 / 3;
+                grid-row: 2 / 3;
+            }
+            
+            .packet-size {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+    <div class="scanline"></div>
+    <div class="grid-lines"></div>
+    <div class="cyber-logo"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>MONITOR DE REDE</h1>
+                <div class="subtitle">SISTEMA PRINCIPAL • NÍVEL 5</div>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="acesso.html" class="nav-item">GERAL</a>
+                <a href="arquivos.html" class="nav-item">ARQUIVOS</a>
+                <a href="terminal.html" class="nav-item">TERMINAL</a>
+                <a href="rede.html" class="nav-item">REDE</a>
+                <a href="mensagem.html" class="nav-item">MENSAGENS</a>
+                <a href="painel.html" class="nav-item active">ADMIN</a>
+            </div>
+        </div>
+        
+        <div class="network-monitor">
+            <div class="control-panel">
+                <div class="panel-header">CONTROLES</div>
+                
+                <div class="filter-section">
+                    <input type="text" class="filter-input" placeholder="Filtrar por IP...">
+                    
+                    <div class="protocol-filters">
+                        <div class="protocol-btn active" data-protocol="all">TODOS</div>
+                        <div class="protocol-btn" data-protocol="tcp">TCP</div>
+                        <div class="protocol-btn" data-protocol="udp">UDP</div>
+                        <div class="protocol-btn" data-protocol="icmp">ICMP</div>
+                        <div class="protocol-btn" data-protocol="http">HTTP</div>
+                        <div class="protocol-btn" data-protocol="https">HTTPS</div>
+                    </div>
+                </div>
+                
+                <div class="panel-header">ESTATÍSTICAS</div>
+                
+                <div class="info-item">
+                    <span>Pacotes/min:</span>
+                    <span id="packets-min">0</span>
+                </div>
+                <div class="info-item">
+                    <span>Largura de banda:</span>
+                    <span id="bandwidth">0 MB/s</span>
+                </div>
+                <div class="info-item">
+                    <span>Dispositivos:</span>
+                    <span id="devices">0</span>
+                </div>
+                <div class="info-item">
+                    <span>TCP:</span>
+                    <span id="tcp-count">0</span>
+                </div>
+                <div class="info-item">
+                    <span>UDP:</span>
+                    <span id="udp-count">0</span>
+                </div>
+                <div class="info-item">
+                    <span>ICMP:</span>
+                    <span id="icmp-count">0</span>
+                </div>
+                
+                <div class="control-buttons">
+                    <div class="control-btn capture" id="toggle-capture">INICIAR</div>
+                    <div class="control-btn" id="clear-btn">LIMPAR</div>
+                </div>
+            </div>
+            
+            <div class="visualization-area">
+                <div class="viz-header">
+                    <div class="viz-title">VISUALIZAÇÃO DE REDE EM TEMPO REAL</div>
+                    <div class="viz-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-packets">0</div>
+                            <div class="stat-label">PACOTES</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="current-speed">0</div>
+                            <div class="stat-label">MB/S</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="threats">0</div>
+                            <div class="stat-label">AMEAÇAS</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="network-canvas">
+                    <div id="network-map">
+                        <!-- Nodes e conexões serão gerados via JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="packet-list" id="packet-list">
+                    <!-- Pacotes serão adicionados via JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="traffic-charts">
+            <div class="chart-container">
+                <div class="panel-header">TRÁFEGO POR PROTOCOLO</div>
+                <div class="chart" id="protocol-chart">
+                    <div class="chart-bar" style="height: 30%;" data-protocol="tcp"></div>
+                    <div class="chart-bar" style="height: 20%;" data-protocol="udp"></div>
+                    <div class="chart-bar" style="height: 15%;" data-protocol="icmp"></div>
+                    <div class="chart-bar" style="height: 25%;" data-protocol="http"></div>
+                    <div class="chart-bar" style="height: 10%;" data-protocol="https"></div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="panel-header">LARGURA DE BANDA</div>
+                <div class="chart" id="bandwidth-chart">
+                    <!-- Barras serão geradas via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="hud">
+        <div class="hud-item">MONITOR ATIVO</div>
+        <div class="hud-item">CAPTURANDO: 0 PACOTES/S</div>
+    </div>
+    
+    <div class="clock" id="clock">00:00:00</div>
+
+    <script>
+        // Dados de exemplo para simulação de rede
+        const protocols = ['tcp', 'udp', 'icmp', 'http'];
+        const ipPrefixes = ['192.168.1.', '10.0.0.', '172.16.0.', '203.0.113.'];
+        const ports = [80, 443, 22, 53, 8080, 21, 25];
+        
+        // Estatísticas
+        let stats = {
+            totalPackets: 0,
+            tcpCount: 0,
+            udpCount: 0,
+            icmpCount: 0,
+            httpCount: 0,
+            httpsCount: 0,
+            currentSpeed: 0,
+            threats: 0
+        };
+        
+        let isCapturing = false;
+        let captureInterval;
+        let packetsPerSecond = 5;
+        
+        // Atualizar relógio
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // Gerar IP aleatório
+        function generateIP() {
+            const prefix = ipPrefixes[Math.floor(Math.random() * ipPrefixes.length)];
+            return prefix + Math.floor(Math.random() * 255);
+        }
+        
+        // Gerar pacote de rede aleatório
+        function generatePacket() {
+            const protocol = protocols[Math.floor(Math.random() * protocols.length)];
+            const sourceIP = generateIP();
+            const destIP = generateIP();
+            const port = ports[Math.floor(Math.random() * ports.length)];
+            const size = Math.floor(Math.random() * 1500) + 100;
+            
+            return {
+                time: new Date().toLocaleTimeString(),
+                protocol,
+                source: `${sourceIP}:${port}`,
+                destination: `${destIP}:${port}`,
+                size: `${size} B`,
+                threat: Math.random() < 0.05 // 5% chance de ser uma ameaça
+            };
+        }
+        
+        // Adicionar pacote à visualização
+        function addPacketToVisualization(packet) {
+            const networkMap = document.getElementById('network-map');
+            
+            // Criar elemento de pacote
+            const packetElement = document.createElement('div');
+            packetElement.classList.add('packet', packet.protocol);
+            
+            // Posicionar aleatoriamente
+            const startX = Math.random() * 100;
+            const startY = Math.random() * 100;
+            
+            packetElement.style.left = `${startX}%`;
+            packetElement.style.top = `${startY}%`;
+            
+            networkMap.appendChild(packetElement);
+            
+            // Animar o pacote
+            const animationDuration = 2 + Math.random() * 3;
+            packetElement.style.transition = `all ${animationDuration}s linear`;
+            
+            setTimeout(() => {
+                packetElement.style.left = `${Math.random() * 100}%`;
+                packetElement.style.top = `${Math.random() * 100}%`;
+            }, 10);
+            
+            // Remover após animação
+            setTimeout(() => {
+                packetElement.remove();
+            }, animationDuration * 1000);
+        }
+        
+        // Adicionar pacote à lista
+        function addPacketToList(packet) {
+            const packetList = document.getElementById('packet-list');
+            const packetItem = document.createElement('div');
+            packetItem.classList.add('packet-item');
+            
+            const protocolClass = `protocol-${packet.protocol}`;
+            
+            packetItem.innerHTML = `
+                <div class="packet-time">${packet.time}</div>
+                <div class="packet-source">${packet.source}</div>
+                <div class="packet-destination">${packet.destination}</div>
+                <div class="packet-size">${packet.size}</div>
+                <div class="packet-protocol ${protocolClass}">${packet.protocol.toUpperCase()}</div>
+            `;
+            
+            // Destacar ameaças
+            if (packet.threat) {
+                packetItem.style.backgroundColor = 'rgba(255, 0, 60, 0.2)';
+                packetItem.style.borderLeft = '3px solid #ff003c';
+            }
+            
+            packetList.appendChild(packetItem);
+            packetList.scrollTop = packetList.scrollHeight;
+            
+            // Manter apenas os 50 pacotes mais recentes
+            if (packetList.children.length > 50) {
+                packetList.removeChild(packetList.children[0]);
+            }
+        }
+        
+        // Atualizar estatísticas
+        function updateStats(packet) {
+            stats.totalPackets++;
+            
+            switch (packet.protocol) {
+                case 'tcp': stats.tcpCount++; break;
+                case 'udp': stats.udpCount++; break;
+                case 'icmp': stats.icmpCount++; break;
+                case 'http': stats.httpCount++; break;
+                case 'https': stats.httpsCount++; break;
+            }
+            
+            if (packet.threat) {
+                stats.threats++;
+            }
+            
+            // Atualizar velocidade atual (pacotes por segundo)
+            stats.currentSpeed = packetsPerSecond;
+            
+            // Atualizar UI
+            document.getElementById('total-packets').textContent = stats.totalPackets;
+            document.getElementById('tcp-count').textContent = stats.tcpCount;
+            document.getElementById('udp-count').textContent = stats.udpCount;
+            document.getElementById('icmp-count').textContent = stats.icmpCount;
+            document.getElementById('current-speed').textContent = stats.currentSpeed;
+            document.getElementById('threats').textContent = stats.threats;
+            document.getElementById('packets-min').textContent = stats.currentSpeed * 60;
+            document.getElementById('bandwidth').textContent = (stats.currentSpeed * 1.5).toFixed(1) + ' MB/s';
+            document.getElementById('devices').textContent = Math.floor(stats.totalPackets / 10) + 12;
+            
+            // Atualizar HUD
+            document.querySelector('.hud-item:last-child').textContent = `CAPTURANDO: ${stats.currentSpeed} PACOTES/S`;
+        }
+        
+        // Iniciar/parar captura
+        function toggleCapture() {
+            const toggleBtn = document.getElementById('toggle-capture');
+            
+            if (isCapturing) {
+                // Parar captura
+                clearInterval(captureInterval);
+                toggleBtn.textContent = 'INICIAR';
+                toggleBtn.style.backgroundColor = 'rgba(0, 243, 255, 0.2)';
+                toggleBtn.style.borderColor = '#00f3ff';
+            } else {
+                // Iniciar captura
+                captureInterval = setInterval(() => {
+                    for (let i = 0; i < packetsPerSecond; i++) {
+                        const packet = generatePacket();
+                        addPacketToVisualization(packet);
+                        addPacketToList(packet);
+                        updateStats(packet);
+                    }
+                }, 1000);
+                
+                toggleBtn.textContent = 'PARAR';
+                toggleBtn.style.backgroundColor = 'rgba(255, 0, 60, 0.2)';
+                toggleBtn.style.borderColor = '#ff003c';
+            }
+            
+            isCapturing = !isCapturing;
+        }
+        
+        // Limpar dados
+        function clearData() {
+            const packetList = document.getElementById('packet-list');
+            packetList.innerHTML = '';
+            
+            const networkMap = document.getElementById('network-map');
+            networkMap.innerHTML = '';
+            
+            // Resetar estatísticas
+            stats = {
+                totalPackets: 0,
+                tcpCount: 0,
+                udpCount: 0,
+                icmpCount: 0,
+                httpCount: 0,
+                httpsCount: 0,
+                currentSpeed: 0,
+                threats: 0
+            };
+            
+            // Atualizar UI
+            document.getElementById('total-packets').textContent = '0';
+            document.getElementById('tcp-count').textContent = '0';
+            document.getElementById('udp-count').textContent = '0';
+            document.getElementById('icmp-count').textContent = '0';
+            document.getElementById('current-speed').textContent = '0';
+            document.getElementById('threats').textContent = '0';
+            document.getElementById('packets-min').textContent = '0';
+            document.getElementById('bandwidth').textContent = '0 MB/s';
+            document.getElementById('devices').textContent = '0';
+            
+            document.querySelector('.hud-item:last-child').textContent = 'CAPTURANDO: 0 PACOTES/S';
+        }
+        
+        // Criar visualização de rede
+        function createNetworkVisualization() {
+            const networkMap = document.getElementById('network-map');
+            
+            // Criar nós
+            const nodeTypes = ['core', 'router', 'server', 'workstation'];
+            const nodes = [];
+            
+            for (let i = 0; i < 15; i++) {
+                const node = document.createElement('div');
+                const type = nodeTypes[Math.floor(Math.random() * nodeTypes.length)];
+                
+                node.classList.add('node', type);
+                node.style.left = `${10 + Math.random() * 80}%`;
+                node.style.top = `${10 + Math.random() * 80}%`;
+                
+                if (type === 'core') {
+                    node.textContent = 'C';
+                } else if (type === 'router') {
+                    node.textContent = 'R';
+                } else if (type === 'server') {
+                    node.textContent = 'S';
+                } else {
+                    node.textContent = 'W';
+                }
+                
+                networkMap.appendChild(node);
+                nodes.push(node);
+            }
+            
+            // Criar conexões
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    if (Math.random() > 0.7) { // 30% chance de conexão
+                        const node1 = nodes[i];
+                        const node2 = nodes[j];
+                        
+                        const x1 = parseFloat(node1.style.left);
+                        const y1 = parseFloat(node1.style.top);
+                        const x2 = parseFloat(node2.style.left);
+                        const y2 = parseFloat(node2.style.top);
+                        
+                        const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                        
+                        const connection = document.createElement('div');
+                        connection.classList.add('connection');
+                        connection.style.width = `${length}%`;
+                        connection.style.left = `${x1}%`;
+                        connection.style.top = `${y1}%`;
+                        connection.style.transform = `rotate(${angle}deg)`;
+                        
+                        networkMap.appendChild(connection);
+                    }
+                }
+            }
+        }
+        
+        // Inicializar
+        window.onload = function() {
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            createNetworkVisualization();
+            
+            // Configurar botões
+            document.getElementById('toggle-capture').addEventListener('click', toggleCapture);
+            document.getElementById('clear-btn').addEventListener('click', clearData);
+            
+            // Configurar filtros de protocolo
+            document.querySelectorAll('.protocol-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.protocol-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+            
+            // Iniciar captura automaticamente após 2 segundos
+            setTimeout(toggleCapture, 2000);
+        };
+    </script>
+</body>
+</html>
+    <script src="auth.js"></script>
+
+

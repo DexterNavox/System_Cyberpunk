@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invasão de Sistema Cyberpunk</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        body {
+            background-color: #0a0a16;
+            color: #00f3ff;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to bottom, 
+                        rgba(0, 243, 255, 0.5), 
+                        rgba(0, 243, 255, 0));
+            box-shadow: 0 0 10px #00f3ff;
+            animation: scan 4s linear infinite;
+            z-index: 100;
+        }
+        
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+            background-color: rgba(10, 10, 22, 0.8);
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            overflow: hidden;
+        }
+        
+        .glitch-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBmM2ZmIiBzdHJva2Utb3BhY2l0eT0iMC4xIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDBoNjB2NjBIMHoiLz48L3N2Zz4=');
+            opacity: 0.3;
+            z-index: -1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #ff003c;
+            text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
+            animation: glitch 5s infinite;
+        }
+        
+        @keyframes glitch {
+            0% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+            95% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+            96% { text-shadow: -2px 0 0 cyan, 2px 0 0 magenta; }
+            97% { text-shadow: 2px 0 0 cyan, -2px 0 0 magenta; }
+            98% { text-shadow: -2px 0 0 cyan, 2px 0 0 magenta; }
+            99% { text-shadow: 2px 0 0 cyan, -2px 0 0 magenta; }
+            100% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+        }
+        
+        .terminal {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 1.5rem;
+            border: 1px solid #00f3ff;
+            box-shadow: inset 0 0 10px #00f3ff;
+            margin-bottom: 2rem;
+            height: 200px;
+            overflow-y: auto;
+        }
+        
+        .terminal-line {
+            margin-bottom: 0.5rem;
+            animation: typing 2s steps(40, end);
+        }
+        
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        .input-area {
+            display: flex;
+            align-items: center;
+        }
+        
+        .prompt {
+            color: #00f3ff;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        #password-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #00f3ff;
+            color: #00f3ff;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            width: 100%;
+            outline: none;
+            letter-spacing: 0.1em;
+        }
+        
+        #password-input:focus {
+            border-bottom: 1px solid #ff003c;
+            box-shadow: 0 1px 0 0 #ff003c;
+        }
+        
+        .warning {
+            color: #ff003c;
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDBoNDB2NDBIMHoiLz48L3N2Zz4=');
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: #00f3ff;
+            opacity: 0.5;
+        }
+        
+        .audio-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .audio-btn {
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .audio-btn:hover {
+            background: rgba(0, 243, 255, 0.4);
+            box-shadow: 0 0 10px #00f3ff;
+        }
+        
+        .sound-init {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .sound-init-btn {
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        
+        .sound-init-btn:hover {
+            background: rgba(0, 243, 255, 0.4);
+            box-shadow: 0 0 20px #00f3ff;
+        }
+        
+        /* Estilos para a tela de download */
+        .download-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .download-content {
+            text-align: center;
+            padding: 2rem;
+            border: 2px solid #00f3ff;
+            background-color: rgba(10, 10, 22, 0.95);
+            box-shadow: 0 0 30px #00f3ff;
+            max-width: 600px;
+            width: 90%;
+        }
+        
+        .download-progress {
+            width: 100%;
+            height: 20px;
+            background-color: #000;
+            border: 1px solid #00f3ff;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff003c, #00f3ff);
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .download-status {
+            margin: 10px 0;
+            color: #00f3ff;
+        }
+        
+        .download-complete {
+            display: none;
+            margin-top: 20px;
+            color: #00f3ff;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+    <div class="scanline"></div>
+    <div class="particles" id="particles"></div>
+    
+    <div class="sound-init" id="sound-init">
+        <h2>INICIAR EXPERIÊNCIA IMERSIVA</h2>
+        <p>Para uma experiência completa com áudio, clique no botão abaixo</p>
+        <button class="sound-init-btn" id="init-sound">ATIVAR SISTEMA DE SOM</button>
+    </div>
+    
+    <!-- Tela de download (inicialmente oculta) -->
+    <div class="download-screen" id="download-screen">
+        <div class="download-content">
+            <h2>DOWNLOAD DE ARQUIVOS CRÍTICOS</h2>
+            <div class="download-progress">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <p class="download-status" id="download-status">Iniciando transferência de dados...</p>
+            <p class="download-complete" id="download-complete">DOWNLOAD CONCLUÍDO! REDIRECIONANDO...</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="glitch-effect"></div>
+        
+        <div class="header">
+            <h1>Acesso ao Sistema Principal</h1>
+        </div>
+        
+        <div class="terminal" id="terminal">
+            <p class="terminal-line">> Sistema de segurança detectado...</p>
+            <p class="terminal-line">> Contornando firewalls...</p>
+            <p class="terminal-line">> BYPASS concluído com sucesso.</p>
+            <p class="terminal-line">> Acesso de nível 3 obtido.</p>
+            <p class="terminal-line">> Sistema principal detectado.</p>
+            <p class="terminal-line">> Senha de acesso requerida.</p>
+        </div>
+        
+        <div class="input-area">
+            <span class="prompt">> SENHA:</span>
+            <input type="password" id="password-input" autofocus>
+        </div>
+        
+        <p class="warning">AVISO: TENTATIVAS INCORRETAS ATIVARÃO O SISTEMA DE ALARME</p>
+    </div>
+
+    <div class="audio-controls">
+        <button class="audio-btn" id="toggle-sound">🔈 Som</button>
+        <button class="audio-btn" id="play-typing">⌨️ Efeitos</button>
+    </div>
+
+    <script>
+        // Sistema de áudio usando Web Audio API para maior compatibilidade
+        let audioContext;
+        let soundEnabled = false;
+        let typingEffectsEnabled = false;
+        
+        // Inicializar áudio
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                document.getElementById('sound-init').style.display = 'none';
+                soundEnabled = true;
+                typingEffectsEnabled = true;
+                document.getElementById('toggle-sound').textContent = '🔊 Som';
+                document.getElementById('play-typing').textContent = '⌨️ Efeitos';
+                
+                // Iniciar som ambiente
+                playAmbientSound();
+            } catch (e) {
+                console.error('Web Audio API não suportada neste navegador:', e);
+                alert('Seu navegador não suporta a API de áudio necessária para esta experiência.');
+            }
+        }
+        
+        // Gerar ruído branco para som ambiente
+        function playAmbientSound() {
+            if (!soundEnabled) return;
+            
+            const bufferSize = 2 * audioContext.sampleRate;
+            const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = audioContext.createBufferSource();
+            noise.buffer = noiseBuffer;
+            noise.loop = true;
+            
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 200;
+            
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = 0.02;
+            
+            noise.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            noise.start();
+        }
+        
+        // Tocar som de teclado
+        function playKeySound() {
+            if (!soundEnabled || !typingEffectsEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'square';
+            oscillator.frequency.value = 800 + Math.random() * 400;
+            
+            gainNode.gain.value = 0.1;
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+        
+        // Tocar som de acesso concedido
+        function playAccessGranted() {
+            if (!soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.5);
+            
+            gainNode.gain.value = 0.2;
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.8);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.8);
+        }
+        
+        // Tocar som de acesso negado
+        function playAccessDenied() {
+            if (!soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.3);
+            
+            gainNode.gain.value = 0.2;
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+        
+        // Criar partículas
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particlesContainer.appendChild(particle);
+                
+                // Animar partícula
+                animateParticle(particle);
+            }
+        }
+        
+        function animateParticle(particle) {
+            let x = parseFloat(particle.style.left);
+            let y = parseFloat(particle.style.top);
+            let xSpeed = (Math.random() - 0.5) * 0.2;
+            let ySpeed = (Math.random() - 0.5) * 0.2;
+            
+            setInterval(() => {
+                x += xSpeed;
+                y += ySpeed;
+                
+                if (x < 0 || x > 100) xSpeed *= -1;
+                if (y < 0 || y > 100) ySpeed *= -1;
+                
+                particle.style.left = `${x}%`;
+                particle.style.top = `${y}%`;
+            }, 100);
+        }
+        
+        // Efeitos de digitação no terminal
+        function typeTerminalLines() {
+            const lines = document.querySelectorAll('.terminal-line');
+            lines.forEach((line, index) => {
+                line.style.width = '0';
+                line.style.overflow = 'hidden';
+                line.style.whiteSpace = 'nowrap';
+                
+                setTimeout(() => {
+                    line.style.animation = `typing ${2 + Math.random() * 2}s steps(40, end)`;
+                    line.style.width = '100%';
+                }, index * 1000);
+            });
+        }
+        
+        // Mostrar tela de download
+        function showDownloadScreen() {
+            const downloadScreen = document.getElementById('download-screen');
+            const progressBar = document.getElementById('progress-bar');
+            const downloadStatus = document.getElementById('download-status');
+            const downloadComplete = document.getElementById('download-complete');
+            
+            // Mostrar a tela de download
+            downloadScreen.style.display = 'flex';
+            
+            // Simular progresso de download
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress > 100) progress = 100;
+                
+                progressBar.style.width = `${progress}%`;
+                
+                if (progress < 30) {
+                    downloadStatus.textContent = "Conectando ao servidor...";
+                } else if (progress < 60) {
+                    downloadStatus.textContent = "Transferindo dados criptografados...";
+                } else if (progress < 90) {
+                    downloadStatus.textContent = "Descriptografando arquivos...";
+                } else {
+                    downloadStatus.textContent = "Finalizando transferência...";
+                }
+                
+                if (progress === 100) {
+                    clearInterval(interval);
+                    downloadStatus.style.display = 'none';
+                    downloadComplete.style.display = 'block';
+                    
+                    // Redirecionar após 3 segundos
+                        sessionStorage.setItem("authenticated", "true");
+                        setTimeout(() => {
+                            window.location.href = "acesso.html";
+                        }, 3000);
+                }
+            }, 300);
+        }
+        
+        // Verificar senha
+        function setupPasswordCheck() {
+            const passwordInput = document.getElementById('password-input');
+            const terminal = document.getElementById('terminal');
+            const correctPassword = "neuroshima"; // Senha correta
+            
+            passwordInput.addEventListener('keydown', function(e) {
+                // Som de tecla pressionada
+                if (e.key.length === 1) {
+                    playKeySound();
+                }
+                
+                if (e.key === 'Enter') {
+                    if (this.value === correctPassword) {
+                        // Senha correta
+                        terminal.innerHTML += `<p class="terminal-line">> ACESSO CONCEDIDO. BEM-VINDO AO SISTEMA.</p>`;
+                        terminal.scrollTop = terminal.scrollHeight;
+                        this.disabled = true;
+                        
+                        // Efeito de acesso concedido
+                        document.body.style.animation = 'flash 0.5s';
+                        setTimeout(() => {
+                            document.body.style.animation = '';
+                        }, 500);
+                        
+                        // Som de acesso concedido
+                        playAccessGranted();
+                        
+                        // Mostrar tela de download após 2 segundos
+                        setTimeout(() => {
+                            showDownloadScreen();
+                        }, 2000);
+                    } else {
+                        // Senha incorreta
+                        terminal.innerHTML += `<p class="terminal-line" style="color: #ff003c;">> ACESSO NEGADO. TENTE NOVAMENTE.</p>`;
+                        terminal.scrollTop = terminal.scrollHeight;
+                        this.value = '';
+                        
+                        // Efeito de erro
+                        document.body.style.animation = 'shake 0.5s';
+                        setTimeout(() => {
+                            document.body.style.animation = '';
+                        }, 500);
+                        
+                        // Som de acesso negado
+                        playAccessDenied();
+                    }
+                }
+            });
+        }
+        
+        // Inicializar
+        window.onload = function() {
+            createParticles();
+            typeTerminalLines();
+            setupPasswordCheck();
+            
+            // Configurar botões de controle de áudio
+            document.getElementById('init-sound').addEventListener('click', initAudio);
+            
+            document.getElementById('toggle-sound').addEventListener('click', function() {
+                soundEnabled = !soundEnabled;
+                this.textContent = soundEnabled ? '🔊 Som' : '🔇 Som';
+            });
+            
+            document.getElementById('play-typing').addEventListener('click', function() {
+                typingEffectsEnabled = !typingEffectsEnabled;
+                this.textContent = typingEffectsEnabled ? '⌨️ Efeitos' : '❌ Efeitos';
+            });
+        };
+    </script>
+</body>
+</html>

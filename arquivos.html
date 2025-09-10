@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gerenciador de Arquivos - Sistema Cyberpunk</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap");
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Share Tech Mono", monospace;
+        }
+
+        body {
+            background-color: #0a0a16;
+            color: #00f3ff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to bottom,
+                    rgba(0, 243, 255, 0.5),
+                    rgba(0, 243, 255, 0));
+            box-shadow: 0 0 10px #00f3ff;
+            animation: scan 4s linear infinite;
+            z-index: 100;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0%;
+            }
+
+            100% {
+                top: 100%;
+            }
+        }
+
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDBoNDB2NDBIMHoiLz48L3N2Zz4=");
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .grid-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+            background-image: linear-gradient(to right,
+                    #00f3ff 1px,
+                    transparent 1px),
+                linear-gradient(to bottom, #00f3ff 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-bottom: 1px solid #00f3ff;
+            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.2);
+        }
+
+        h1 {
+            font-family: "Orbitron", sans-serif;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #ff003c;
+            text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
+            animation: glitch 5s infinite;
+        }
+
+        .subtitle {
+            color: #00f3ff;
+            font-size: 1.2rem;
+            letter-spacing: 0.3em;
+        }
+
+        @keyframes glitch {
+            0% {
+                text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
+            }
+
+            95% {
+                text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
+            }
+
+            96% {
+                text-shadow: -2px 0 0 cyan, 2px 0 0 magenta;
+            }
+
+            97% {
+                text-shadow: 2px 0 0 cyan, -2px 0 0 magenta;
+            }
+
+            98% {
+                text-shadow: -2px 0 0 cyan, 2px 0 0 magenta;
+            }
+
+            99% {
+                text-shadow: 2px 0 0 cyan, -2px 0 0 magenta;
+            }
+
+            100% {
+                text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
+            }
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-item {
+            color: #00f3ff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 15px #00f3ff;
+        }
+
+        .file-manager {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+
+        .sidebar-header {
+            color: #ff003c;
+            font-family: "Orbitron", sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 5px #ff003c;
+            border-bottom: 1px solid #00f3ff;
+            padding-bottom: 0.5rem;
+        }
+
+        .drive-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .drive-item {
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .drive-item:hover {
+            background-color: rgba(0, 243, 255, 0.1);
+            border-color: #00f3ff;
+        }
+
+        .drive-item.active {
+            background-color: rgba(0, 243, 255, 0.2);
+            border-color: #ff003c;
+        }
+
+        .drive-icon {
+            margin-right: 10px;
+            color: #00f3ff;
+        }
+
+        .quick-access {
+            list-style: none;
+        }
+
+        .quick-item {
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-item:hover {
+            background-color: rgba(0, 243, 255, 0.1);
+            border-color: #00f3ff;
+        }
+
+        .file-content {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+
+        .path-bar {
+            padding: 1rem;
+            border-bottom: 1px solid #00f3ff;
+            display: flex;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .path-item {
+            color: #00f3ff;
+            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+
+        .path-item:hover {
+            color: #ff003c;
+        }
+
+        .path-separator {
+            margin: 0 0.5rem;
+            color: #ff003c;
+        }
+
+        .toolbar {
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid #00f3ff;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .tool-button {
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tool-button:hover {
+            background: rgba(0, 243, 255, 0.4);
+            box-shadow: 0 0 10px #00f3ff;
+        }
+
+        .file-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .file-item {
+            background-color: rgba(0, 243, 255, 0.1);
+            border: 1px solid #00f3ff;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-item:hover {
+            background-color: rgba(0, 243, 255, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.3);
+        }
+
+        .file-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-name {
+            font-size: 0.9rem;
+            color: #00f3ff;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-size {
+            font-size: 0.8rem;
+            color: #ff003c;
+            margin-top: 0.3rem;
+        }
+
+        .file-date {
+            font-size: 0.7rem;
+            color: rgba(0, 243, 255, 0.7);
+        }
+
+        .status-bar {
+            padding: 0.8rem 1rem;
+            border-top: 1px solid #00f3ff;
+            display: flex;
+            justify-content: space-between;
+            background-color: rgba(0, 0, 0, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .status-item {
+            color: #00f3ff;
+        }
+
+        .hud {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .hud-item {
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 10px 15px;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        .clock {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-family: "Orbitron", sans-serif;
+            font-size: 1.5rem;
+            color: #ff003c;
+            text-shadow: 0 0 5px #ff003c;
+            z-index: 1000;
+        }
+
+        .cyber-logo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 10px #00f3ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: rotate 10s linear infinite;
+            z-index: 1000;
+        }
+
+        .cyber-logo::before {
+            content: "Δ";
+            font-size: 2rem;
+            color: #ff003c;
+            text-shadow: 0 0 5px #ff003c;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .context-menu {
+            position: absolute;
+            background-color: rgba(10, 10, 22, 0.95);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+            z-index: 1000;
+            display: none;
+        }
+
+        .context-item {
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            color: #00f3ff;
+            transition: all 0.3s;
+        }
+
+        .context-item:hover {
+            background-color: rgba(0, 243, 255, 0.2);
+            color: #ff003c;
+        }
+
+        .file-preview {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(10, 10, 22, 0.95);
+            border: 2px solid #00f3ff;
+            box-shadow: 0 0 30px #00f3ff;
+            padding: 2rem;
+            z-index: 2000;
+            display: none;
+            max-width: 80%;
+            max-height: 80%;
+            overflow: auto;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #00f3ff;
+            padding-bottom: 1rem;
+        }
+
+        .preview-title {
+            color: #ff003c;
+            font-family: "Orbitron", sans-serif;
+            font-size: 1.5rem;
+        }
+
+        .preview-close {
+            background: none;
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+
+        .preview-close:hover {
+            background-color: rgba(255, 0, 60, 0.2);
+        }
+
+        .preview-content {
+            color: #00f3ff;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 900px) {
+            .file-manager {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .file-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="noise"></div>
+    <div class="scanline"></div>
+    <div class="grid-lines"></div>
+    <div class="cyber-logo"></div>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>ARQUIVOS</h1>
+                <div class="subtitle">SISTEMA PRINCIPAL • NÍVEL 5</div>
+            </div>
+
+            <div class="nav-menu">
+                <a href="acesso.html" class="nav-item">GERAL</a>
+                <a href="arquivos.html" class="nav-item">ARQUIVOS</a>
+                <a href="terminal.html" class="nav-item">TERMINAL</a>
+                <a href="rede.html" class="nav-item">REDE</a>
+                <a href="mensagem.html" class="nav-item">MENSAGENS</a>
+                <a href="painel.html" class="nav-item active">ADMIN</a>
+            </div>
+        </div>
+
+        <div class="file-manager">
+            <div class="sidebar">
+                <div class="sidebar-header">DRIVES</div>
+                <ul class="drive-list">
+                    <li class="drive-item active">
+                        <span class="drive-icon">⟢</span>
+                        <a href="arquivos.html" style="color: inherit; text-decoration: none">
+                        Sistema (C:)</a>
+                    </li>
+                    <li class="drive-item">
+                        <span class="drive-icon">⟢</span>
+                        <a href="d.html" style="color: inherit; text-decoration: none">Dados (D:)</a>
+                    </li>
+                    <li class="drive-item">
+                        <span class="drive-icon">⟢</span>
+                        <a href="e.html" style="color: inherit; text-decoration: none">Backup (E:)</a>
+                    </li>
+                    <li class="drive-item">
+                        <span class="drive-icon">⟢</span>
+                        <a href="z.html" style="color: inherit; text-decoration: none">Rede (Z:)</a>
+                    </li>
+                </ul>
+
+                <div class="sidebar-header">ACESSO RÁPIDO</div>
+                <ul class="quick-access">
+                    <li class="quick-item">
+                        <a href="jogos.html" style="color: inherit; text-decoration: none">Jogos</a>
+                        </li>
+                    <li class="quick-item">
+                        <a href="doom.html" style="color: inherit; text-decoration: none">DOOM</a>
+                        </li>
+                    <li class="quick-item">
+                        <a href="wind.html" style="color: inherit; text-decoration: none">Win 98</a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="file-content">
+                <div class="path-bar">
+                    <span class="path-item">Sistema (C:)</span>
+                    <span class="path-separator">></span>
+                    <span class="path-item">Usuários</span>
+                    <span class="path-separator">></span>
+                    <span class="path-item">Admin</span>
+                    <span class="path-separator">></span>
+                    <span class="path-item">Documentos</span>
+                </div>
+
+                <div class="toolbar">
+                    <button class="tool-button">Voltar</button>
+                    <button class="tool-button">Avancar</button>
+                    <button class="tool-button">Acima</button>
+                    <button class="tool-button">Novo</button>
+                    <button class="tool-button">Copiar</button>
+                    <button class="tool-button">Mover</button>
+                    <button class="tool-button">Deletar</button>
+                    <button class="tool-button">Propriedades</button>
+                </div>
+
+                <div class="file-list">
+                    <div class="file-grid" id="file-grid">
+                        <!-- Arquivos serão carregados via JavaScript -->
+                    </div>
+                </div>
+
+                <div class="status-bar">
+                    <div class="status-item">15 itens</div>
+                    <div class="status-item">2.4 GB livres de 250 GB</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hud">
+        <div class="hud-item">SISTEMA ATIVO</div>
+        <div class="hud-item">PROTOCOLO: TACHIOMA</div>
+    </div>
+
+    <div class="clock" id="clock">00:00:00</div>
+
+    <div class="context-menu" id="context-menu">
+        <div class="context-item">Abrir</div>
+        <div class="context-item">Abrir com</div>
+        <div class="context-item">Copiar</div>
+        <div class="context-item">Mover</div>
+        <div class="context-item">Renomear</div>
+        <div class="context-item">Deletar</div>
+        <div class="context-item">Propriedades</div>
+    </div>
+
+    <div class="file-preview" id="file-preview">
+        <div class="preview-header">
+            <div class="preview-title" id="preview-title">Arquivo</div>
+            <button class="preview-close" id="preview-close">Fechar</button>
+        </div>
+        <div class="preview-content" id="preview-content">
+            Conteúdo do arquivo será exibido aqui.
+        </div>
+    </div>
+
+    <script>
+        // Dados de exemplo para os arquivos
+        const fileData = [
+            {
+                name: "Relatorio.pdf",
+                type: "pdf",
+                size: "2.4 MB",
+                date: "2023-10-25 14:32",
+                content:
+                    "RELATÓRIO DE SEGURANÇA\n\nSistema: Estável\nTentativas de acesso: 3\nVulnerabilidades: 2 críticas\nBackup: Completo\n\nRecomendações:\n- Atualizar firewall\n- Reforçar criptografia\n- Monitorar rede 24/7",
+            },
+            {
+                name: "Blueprints.fb",
+                type: "blueprint",
+                size: "5.7 MB",
+                date: "2023-10-24 09:15",
+                content:
+                    "BLUEPRINTS CORPORATIVOS\n\nÁrea: Setor Norte\nAndares: 15\nSistemas de segurança: Nível 4\nAcessos restritos: 12\n\nNotas: Sistema de ventilação vulnerável.",
+            },
+            {
+                name: "Codigo_Fonte.cs",
+                type: "code",
+                size: "1.2 MB",
+                date: "2023-10-23 16:48",
+                content:
+                    'using System;\nusing System.Security;\n\nnamespace NeuroshimaSecurity\n{\n    class MainProgram\n    {\n        static void Main()\n        {\n            // Sistema de bypass de segurança\n            SecuritySystem.DisableProtocol("TACHIOMA");\n            Database.Access("mainframe");\n            \n            Console.WriteLine("Acesso concedido");\n        }\n    }\n}',
+            },
+            {
+                name: "Financeiro.xls",
+                type: "spreadsheet",
+                size: "3.8 MB",
+                date: "2023-10-22 11:27",
+                content:
+                    "FINANÇAS CORPORATIVAS - OUT/2023\n\nReceita: R$ 2.450.000,00\nDespesas: R$ 1.980.000,00\nLucro: R$ 470.000,00\n\nInvestimentos em segurança: R$ 120.000,00\nProjeção Nov/2023: R$ 510.000,00",
+            },
+            {
+                name: "Config.conf",
+                type: "config",
+                size: "0.4 MB",
+                date: "2023-10-21 08:56",
+                content:
+                    "[System]\nSecurityLevel=5\nAutoUpdate=1\nEncryption=AES256\n\n[Network]\nPrimaryDNS=8.8.8.8\nSecondaryDNS=8.8.4.4\nProxyEnabled=0\n\n[Backup]\nFrequency=24\nRetention=7\nEncryption=1",
+            },
+            {
+                name: "Seguranca.zip",
+                type: "archive",
+                size: "12.5 MB",
+                date: "2023-10-20 17:33",
+                content:
+                    "ARQUIVO COMPACTADO\n\nContém:\n- protocolos_seguranca.pdf\n- senhas_criptografadas.dat\n- logs_acesso.bin\n- planos_emergencia.doc\n\nTamanho total: 54.2 MB\nCompactado: 12.5 MB\nTaxa de compressão: 77%",
+            },
+            {
+                name: "Imagem_Satelite.jpg",
+                type: "image",
+                size: "4.2 MB",
+                date: "2023-10-19 13:41",
+                content:
+                    "IMAGEM DE SATÉLITE - SETOR LESTE\n\nCoordenadas: 23.5505° S, 46.6333° W\nData: 2023-10-19\nResolução: 0.5m\n\nAnálise: Movimento suspeito detectado no perímetro norte.",
+            },
+            {
+                name: "Audio_gravacao.wav",
+                type: "audio",
+                size: "8.7 MB",
+                date: "2023-10-18 22:15",
+                content:
+                    "GRAVAÇÃO DE ÁUDIO - CANAL 4\n\nDuração: 5:32\nQualidade: 256 kbps\nCanal: Segurança interna\n\nTranscrição:\n[00:01] - Sistema de vigilância ativado\n[00:45] - Alerta: Sensor de movimento acionado\n[02:13] - Verificação: Nenhuma ameaça detectada\n[03:28] - Reinicialização dos protocolos\n[04:50] - Todos os sistemas normais",
+            },
+            {
+                name: "Apresentacao.ppt",
+                type: "presentation",
+                size: "6.3 MB",
+                date: "2023-10-17 10:08",
+                content:
+                    "APRESENTAÇÃO - REVISÃO DE SEGURANÇA\n\nSlides: 15\nTópicos:\n- Análise de vulnerabilidades\n- Atualizações do sistema\n- Novas medidas de proteção\n- Treinamento da equipe\n- Orçamento 2024\n\nPróxima revisão: 2023-12-05",
+            },
+            {
+                name: "Manual.txt",
+                type: "text",
+                size: "0.8 MB",
+                date: "2023-10-16 15:19",
+                content:
+                    "MANUAL DO SISTEMA - VERSÃO 3.4.1\n\n1. Introdução\n2. Configuração inicial\n3. Protocolos de segurança\n4. Procedimentos de emergência\n5. Solução de problemas\n\nPara suporte técnico, contate: suporte@neuroshima.com",
+            },
+            {
+                name: "Database.bak",
+                type: "database",
+                size: "45.2 MB",
+                date: "2023-10-15 03:27",
+                content:
+                    "BACKUP DO BANCO DE DADOS\n\nData: 2023-10-15\nTamanho: 45.2 MB\nTabelas: 12\nRegistros: 124.532\n\nHash: a7f5d9c3e2b1a8f6d4c7e9b5a2\nStatus: Verificado e íntegro",
+            },
+            {
+                name: "Script.py",
+                type: "code",
+                size: "0.6 MB",
+                date: "2023-10-14 18:52",
+                content:
+                    "#!/usr/bin/python3\n# Script de automação de segurança\n\nimport security_lib\nimport database_api\n\ndef main():\n    # Verificar vulnerabilidades\n    vulns = security_lib.scan_system()\n    \n    # Aplicar patches se necessário\n    if vulns:\n        security_lib.apply_patches(vulns)\n    \n    # Registrar no banco de dados\n    database_api.log_action('security_scan', 'completed')\n\nif __name__ == \"__main__\":\n    main()",
+            },
+            {
+                name: "Logs_Sistema.log",
+                type: "log",
+                size: "2.1 MB",
+                date: "2023-10-13 23:14",
+                content:
+                    "LOGS DO SISTEMA - 2023-10-13\n\n[00:32:11] Sistema iniciado\n[02:45:18] Backup automático iniciado\n[02:47:22] Backup concluído com sucesso\n[04:13:05] Tentativa de acesso não autorizado\n[04:13:07] Tentativa bloqueada pelo firewall\n[08:30:45] Usuário admin autenticado\n[12:15:33] Verificação de integridade executada\n[18:20:09] Atualização de segurança instalada\n[23:59:47] Sistema encerrado",
+            },
+            {
+                name: "Videos_Vigilancia.mp4",
+                type: "video",
+                size: "125.8 MB",
+                date: "2023-10-12 07:38",
+                content:
+                    "VÍDEO DE VIGILÂNCIA - CÂMERA 12\n\nDuração: 10:25\nData: 2023-10-12\nLocal: Entrada principal\n\nEventos detectados:\n- 00:02:14 - Funcionário entrando\n- 00:05:47 - Entrega de pacotes\n- 00:08:13 - Viatura de segurança\n- 00:09:55 - Limpeza do saguão\n\nNenhuma atividade suspeita.",
+            },
+            {
+                name: "Chaves_Criptografia.key",
+                type: "encrypted",
+                size: "0.1 MB",
+                date: "2023-10-11 20:05",
+                content:
+                    "CHAVES DE CRIPTOGRAFIA - NÍVEL 5\n\nAlgoritmo: AES-256\nTamanho da chave: 256 bits\nData de geração: 2023-10-11\nValidade: 30 dias\n\nHash: e5c2d7a9b3f1e8d4c6a9b2e5c8d7f6a3\n\nMantenha em local seguro. Não compartilhe.",
+            },
+        ];
+
+        // Ícones para cada tipo de arquivo
+        const fileIcons = {
+            pdf: "📄",
+            blueprint: "📐",
+            code: "💻",
+            spreadsheet: "📊",
+            config: "⚙️",
+            archive: "📦",
+            image: "🖼️",
+            audio: "🔊",
+            presentation: "📋",
+            text: "📝",
+            database: "🗄️",
+            log: "📒",
+            video: "🎥",
+            encrypted: "🔒",
+        };
+
+        // Atualizar relógio
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, "0");
+            const minutes = String(now.getMinutes()).padStart(2, "0");
+            const seconds = String(now.getSeconds()).padStart(2, "0");
+
+            document.getElementById(
+                "clock"
+            ).textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // Carregar arquivos na grade
+        function loadFiles() {
+            const fileGrid = document.getElementById("file-grid");
+            fileGrid.innerHTML = "";
+
+            fileData.forEach((file) => {
+                const fileItem = document.createElement("div");
+                fileItem.classList.add("file-item");
+                fileItem.dataset.name = file.name;
+                fileItem.dataset.type = file.type;
+
+                fileItem.innerHTML = `
+                    <div class="file-icon">${fileIcons[file.type]}</div>
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${file.size}</div>
+                    <div class="file-date">${file.date}</div>
+                `;
+
+                fileItem.addEventListener("click", () => {
+                    showFilePreview(file);
+                });
+
+                fileItem.addEventListener("contextmenu", (e) => {
+                    e.preventDefault();
+                    showContextMenu(e, file);
+                });
+
+                fileGrid.appendChild(fileItem);
+            });
+        }
+
+        // Mostrar preview do arquivo
+        function showFilePreview(file) {
+            const preview = document.getElementById("file-preview");
+            const title = document.getElementById("preview-title");
+            const content = document.getElementById("preview-content");
+
+            title.textContent = file.name;
+            content.textContent = file.content;
+
+            preview.style.display = "block";
+        }
+
+        // Fechar preview do arquivo
+        function setupPreviewClose() {
+            const closeBtn = document.getElementById("preview-close");
+            const preview = document.getElementById("file-preview");
+
+            closeBtn.addEventListener("click", () => {
+                preview.style.display = "none";
+            });
+        }
+
+        // Mostrar menu de contexto
+        function showContextMenu(e, file) {
+            const contextMenu = document.getElementById("context-menu");
+            contextMenu.style.display = "block";
+            contextMenu.style.left = `${e.pageX}px`;
+            contextMenu.style.top = `${e.pageY}px`;
+
+            // Fechar menu ao clicar em qualquer lugar
+            setTimeout(() => {
+                document.addEventListener("click", closeContextMenu);
+            }, 100);
+        }
+
+        // Fechar menu de contexto
+        function closeContextMenu() {
+            const contextMenu = document.getElementById("context-menu");
+            contextMenu.style.display = "none";
+            document.removeEventListener("click", closeContextMenu);
+        }
+
+        // Configurar itens do menu de contexto
+        function setupContextMenu() {
+            const contextItems = document.querySelectorAll(".context-item");
+            contextItems.forEach((item) => {
+                item.addEventListener("click", () => {
+                    alert("Ação selecionada: " + item.textContent);
+                    closeContextMenu();
+                });
+            });
+        }
+
+        // Inicializar
+        window.onload = function () {
+            updateClock();
+            setInterval(updateClock, 1000);
+            loadFiles();
+            setupPreviewClose();
+            setupContextMenu();
+
+            // Fechar menu de contexto com ESC
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") {
+                    closeContextMenu();
+                    document.getElementById("file-preview").style.display = "none";
+                }
+            });
+        };
+    </script>
+</body>
+
+</html>
+    <script src="auth.js"></script>
+
+

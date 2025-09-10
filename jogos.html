@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Cyberpunk - Sistema de Jogos</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        body {
+            background-color: #0a0a16;
+            color: #00f3ff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to bottom, 
+                        rgba(0, 243, 255, 0.5), 
+                        rgba(0, 243, 255, 0));
+            box-shadow: 0 0 10px #00f3ff;
+            animation: scan 4s linear infinite;
+            z-index: 100;
+        }
+        
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+        
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCI gaGVpZ2h0PSI0MCI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDBoNDB2NDBIMHoiLz48L3N2Zz4=');
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        .grid-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+            background-image: 
+                linear-gradient(to right, #00f3ff 1px, transparent 1px),
+                linear-gradient(to bottom, #00f3ff 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-bottom: 1px solid #00f3ff;
+            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.2);
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #ff003c;
+            text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
+            animation: glitch 5s infinite;
+        }
+        
+        .subtitle {
+            color: #00f3ff;
+            font-size: 1.2rem;
+            letter-spacing: 0.3em;
+        }
+        
+        @keyframes glitch {
+            0% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+            95% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+            96% { text-shadow: -2px 0 0 cyan, 2px 0 0 magenta; }
+            97% { text-shadow: 2px 0 0 cyan, -2px 0 0 magenta; }
+            98% { text-shadow: -2px 0 0 cyan, 2px 0 0 magenta; }
+            99% { text-shadow: 2px 0 0 cyan, -2px 0 0 magenta; }
+            100% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .nav-item {
+            color: #00f3ff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 15px #00f3ff;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .game-card {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            height: 590px;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 243, 255, 0.5);
+        }
+        
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .game-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #00f3ff;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .game-title {
+            color: #ff003c;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            text-align: center;
+            text-shadow: 0 0 5px #ff003c;
+        }
+        
+        .game-content {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: calc(100% - 80px);
+        }
+        
+        .game-canvas {
+            background-color: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 10px #00f3ff;
+            margin-bottom: 1rem;
+        }
+        
+        .game-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .control-btn {
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: rgba(0, 243, 255, 0.4);
+            box-shadow: 0 0 10px #00f3ff;
+        }
+        
+        .control-btn.start {
+            background: rgba(0, 255, 102, 0.2);
+            border-color: #00ff66;
+        }
+        
+        .control-btn.start:hover {
+            background: rgba(0, 255, 102, 0.4);
+            box-shadow: 0 0 10px #00ff66;
+        }
+        
+        .control-btn.pause {
+            background: rgba(255, 204, 0, 0.2);
+            border-color: #ffcc00;
+        }
+        
+        .control-btn.pause:hover {
+            background: rgba(255, 204, 0, 0.4);
+            box-shadow: 0 0 10px #ffcc00;
+        }
+        
+        .control-btn.reset {
+            background: rgba(255, 0, 60, 0.2);
+            border-color: #ff003c;
+        }
+        
+        .control-btn.reset:hover {
+            background: rgba(255, 0, 60, 0.4);
+            box-shadow: 0 0 10px #ff003c;
+        }
+        
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-value {
+            color: #00f3ff;
+            font-size: 1.2rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .stat-label {
+            color: #ff003c;
+            font-size: 0.8rem;
+        }
+        
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .instructions::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .instructions-header {
+            color: #ff003c;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 5px #ff003c;
+            border-bottom: 1px solid #00f3ff;
+            padding-bottom: 0.5rem;
+        }
+        
+        .instructions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .instruction-item {
+            margin-bottom: 1rem;
+        }
+        
+        .instruction-title {
+            color: #00f3ff;
+            margin-bottom: 0.5rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .instruction-desc {
+            color: rgba(0, 243, 255, 0.8);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+            padding: 0.2rem 0.5rem;
+            margin: 0 0.2rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+        
+        .hud {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+        
+        .hud-item {
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 10px 15px;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+        
+        .clock {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: #ff003c;
+            text-shadow: 0 0 5px #ff003c;
+            z-index: 1000;
+        }
+        
+        .cyber-logo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 10px #00f3ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: rotate 10s linear infinite;
+            z-index: 1000;
+        }
+        
+        .cyber-logo::before {
+            content: 'Δ';
+            font-size: 2rem;
+            color: #ff003c;
+            text-shadow: 0 0 5px #ff003c;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 900px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-card {
+                height: auto;
+                min-height: 400px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .instructions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Estilos específicos para os jogos */
+        #snake-canvas, #tetris-canvas, #space-canvas {
+            display: block;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff003c;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            text-align: center;
+            text-shadow: 0 0 10px #ff003c;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2rem;
+            border: 2px solid #ff003c;
+            box-shadow: 0 0 20px #ff003c;
+            z-index: 10;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+    <div class="scanline"></div>
+    <div class="grid-lines"></div>
+    <div class="cyber-logo"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>ARCADE CYBERPUNK</h1>
+                <div class="subtitle">SISTEMA DE JOGOS • NÍVEL 5</div>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="acesso.html" class="nav-item">GERAL</a>
+                <a href="arquivos.html" class="nav-item">ARQUIVOS</a>
+                <a href="terminal.html" class="nav-item">TERMINAL</a>
+                <a href="rede.html" class="nav-item">REDE</a>
+                <a href="mensagem.html" class="nav-item">MENSAGENS</a>
+                <a href="painel.html" class="nav-item active">ADMIN</a>
+            </div>
+        </div>
+        
+        <div class="games-grid">
+            <!-- Jogo Snake -->
+            <div class="game-card">
+                <div class="game-header">
+                    <div class="game-title">CYBER SNAKE</div>
+                </div>
+                <div class="game-content">
+                    <canvas id="snake-canvas" class="game-canvas" width="300" height="240"></canvas>
+                    <div class="game-controls">
+                        <button class="control-btn start" id="snake-start">INICIAR</button>
+                        <button class="control-btn pause" id="snake-pause">PAUSAR</button>
+                        <button class="control-btn reset" id="snake-reset">REINICIAR</button>
+                    </div>
+                    <div class="game-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="snake-score">0</div>
+                            <div class="stat-label">PONTOS</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="snake-level">1</div>
+                            <div class="stat-label">NÍVEL</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="snake-highscore">0</div>
+                            <div class="stat-label">RECORDE</div>
+                        </div>
+                    </div>
+                    <div class="game-over" id="snake-game-over">GAME OVER</div>
+                </div>
+            </div>
+            
+            <!-- Jogo Tetris -->
+            <div class="game-card">
+                <div class="game-header">
+                    <div class="game-title">NEON TETRIS</div>
+                </div>
+                <div class="game-content">
+                    <canvas id="tetris-canvas" class="game-canvas" width="240" height="360"></canvas>
+                    <div class="game-controls">
+                        <button class="control-btn start" id="tetris-start">INICIAR</button>
+                        <button class="control-btn pause" id="tetris-pause">PAUSAR</button>
+                        <button class="control-btn reset" id="tetris-reset">REINICIAR</button>
+                    </div>
+                    <div class="game-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="tetris-score">0</div>
+                            <div class="stat-label">PONTOS</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="tetris-lines">0</div>
+                            <div class="stat-label">LINHAS</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="tetris-highscore">0</div>
+                            <div class="stat-label">RECORDE</div>
+                        </div>
+                    </div>
+                    <div class="game-over" id="tetris-game-over">GAME OVER</div>
+                </div>
+            </div>
+            
+            <!-- Jogo de Naves -->
+            <div class="game-card">
+                <div class="game-header">
+                    <div class="game-title">SPACE DEFENDER</div>
+                </div>
+                <div class="game-content">
+                    <canvas id="space-canvas" class="game-canvas" width="300" height="360"></canvas>
+                    <div class="game-controls">
+                        <button class="control-btn start" id="space-start">INICIAR</button>
+                        <button class="control-btn pause" id="space-pause">PAUSAR</button>
+                        <button class="control-btn reset" id="space-reset">REINICIAR</button>
+                    </div>
+                    <div class="game-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="space-score">0</div>
+                            <div class="stat-label">PONTOS</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="space-level">1</div>
+                            <div class="stat-label">NÍVEL</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="space-highscore">0</div>
+                            <div class="stat-label">RECORDE</div>
+                        </div>
+                    </div>
+                    <div class="game-over" id="space-game-over">GAME OVER</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <div class="instructions-header">INSTRUÇÕES DOS JOGOS</div>
+            <div class="instructions-grid">
+                <div class="instruction-item">
+                    <div class="instruction-title">CYBER SNAKE</div>
+                    <div class="instruction-desc">
+                        Use as teclas <span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span> para controlar a cobra.
+                        Coma os pontos vermelhos para crescer e ganhar pontos.
+                        Evite colidir com as paredes e com o próprio corpo.
+                    </div>
+                </div>
+                
+                <div class="instruction-item">
+                    <div class="instruction-title">NEON TETRIS</div>
+                    <div class="instruction-desc">
+                        Use <span class="key">←</span> <span class="key">→</span> para mover as peças.
+                        <span class="key">↑</span> para rotacionar e <span class="key">↓</span> para acelerar a descida.
+                        Complete linhas horizontais para eliminá-las e ganhar pontos.
+                    </div>
+                </div>
+                
+                <div class="instruction-item">
+                    <div class="instruction-title">SPACE DEFENDER</div>
+                    <div class="instruction-desc">
+                        Use <span class="key">←</span> <span class="key">→</span> para mover a nave.
+                        <span class="key">Espaço</span> para atirar.
+                        Destrua os asteroides para ganhar pontos.
+                        Evite colidir com os asteroides e tiros inimigos.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="hud">
+        <div class="hud-item">ARCADE ATIVO</div>
+        <div class="hud-item">MODO: JOGOS</div>
+    </div>
+    
+    <div class="clock" id="clock">00:00:00</div>
+
+    <script>
+        // ==============================================
+        // RELÓGIO
+        // ==============================================
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // ==============================================
+        // JOGO SNAKE
+        // ==============================================
+        const snakeCanvas = document.getElementById('snake-canvas');
+        const snakeCtx = snakeCanvas.getContext('2d');
+        const snakeScore = document.getElementById('snake-score');
+        const snakeLevel = document.getElementById('snake-level');
+        const snakeHighscore = document.getElementById('snake-highscore');
+        const snakeGameOver = document.getElementById('snake-game-over');
+        
+        const gridSize = 20;
+        const gridWidth = snakeCanvas.width / gridSize;
+        const gridHeight = snakeCanvas.height / gridSize;
+        
+        let snake = [];
+        let food = {};
+        let direction = 'right';
+        let nextDirection = 'right';
+        let gameInterval;
+        let score = 0;
+        let level = 1;
+        let highscore = 0;
+        let gameRunning = false;
+        
+        function initSnake() {
+            snake = [
+                {x: 5, y: 10},
+                {x: 4, y: 10},
+                {x: 3, y: 10}
+            ];
+            
+            generateFood();
+            direction = 'right';
+            nextDirection = 'right';
+            score = 0;
+            level = 1;
+            updateStats();
+        }
+        
+        function generateFood() {
+            food = {
+                x: Math.floor(Math.random() * gridWidth),
+                y: Math.floor(Math.random() * gridHeight)
+            };
+            
+            // Garantir que a comida não aparece na cobra
+            for (let i = 0; i < snake.length; i++) {
+                if (snake[i].x === food.x && snake[i].y === food.y) {
+                    return generateFood();
+                }
+            }
+        }
+        
+        function updateStats() {
+            snakeScore.textContent = score;
+            snakeLevel.textContent = level;
+            snakeHighscore.textContent = highscore;
+        }
+        
+        function drawSnake() {
+            // Limpar canvas
+            snakeCtx.fillStyle = '#0a0a16';
+            snakeCtx.fillRect(0, 0, snakeCanvas.width, snakeCanvas.height);
+            
+            // Desenhar grade
+            snakeCtx.strokeStyle = 'rgba(0, 243, 255, 0.1)';
+            snakeCtx.lineWidth = 0.5;
+            for (let x = 0; x < snakeCanvas.width; x += gridSize) {
+                snakeCtx.beginPath();
+                snakeCtx.moveTo(x, 0);
+                snakeCtx.lineTo(x, snakeCanvas.height);
+                snakeCtx.stroke();
+            }
+            for (let y = 0; y < snakeCanvas.height; y += gridSize) {
+                snakeCtx.beginPath();
+                snakeCtx.moveTo(0, y);
+                snakeCtx.lineTo(snakeCanvas.width, y);
+                snakeCtx.stroke();
+            }
+            
+            // Desenhar comida
+            snakeCtx.fillStyle = '#ff003c';
+            snakeCtx.shadowBlur = 10;
+            snakeCtx.shadowColor = '#ff003c';
+            snakeCtx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+            snakeCtx.shadowBlur = 0;
+            
+            // Desenhar cobra
+            snake.forEach((segment, index) => {
+                if (index === 0) {
+                    snakeCtx.fillStyle = '#00f3ff'; // Cabeça
+                } else {
+                    snakeCtx.fillStyle = '#00ff66'; // Corpo
+                }
+                snakeCtx.shadowBlur = 10;
+                snakeCtx.shadowColor = index === 0 ? '#00f3ff' : '#00ff66';
+                snakeCtx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+                snakeCtx.shadowBlur = 0;
+            });
+        }
+        
+        function moveSnake() {
+            direction = nextDirection;
+            
+            // Calcular nova posição da cabeça
+            const head = {x: snake[0].x, y: snake[0].y};
+            
+            switch(direction) {
+                case 'up': head.y--; break;
+                case 'down': head.y++; break;
+                case 'left': head.x--; break;
+                case 'right': head.x++; break;
+            }
+            
+            // Verificar colisões
+            if (
+                head.x < 0 || head.x >= gridWidth ||
+                head.y < 0 || head.y >= gridHeight ||
+                snake.some(segment => segment.x === head.x && segment.y === head.y)
+            ) {
+                gameOver();
+                return;
+            }
+            
+            // Adicionar nova cabeça
+            snake.unshift(head);
+            
+            // Verificar se comeu a comida
+            if (head.x === food.x && head.y === food.y) {
+                score += 10 * level;
+                if (score % 100 === 0) {
+                    level++;
+                }
+                if (score > highscore) {
+                    highscore = score;
+                }
+                updateStats();
+                generateFood();
+            } else {
+                // Remover cauda se não comeu
+                snake.pop();
+            }
+            
+            drawSnake();
+        }
+        
+        function gameOver() {
+            clearInterval(gameInterval);
+            gameRunning = false;
+            snakeGameOver.style.display = 'block';
+        }
+        
+        function startSnake() {
+            if (gameRunning) return;
+            
+            snakeGameOver.style.display = 'none';
+            initSnake();
+            drawSnake();
+            gameRunning = true;
+            gameInterval = setInterval(moveSnake, 200 - (level * 10));
+        }
+        
+        function pauseSnake() {
+            if (!gameRunning) return;
+            
+            if (gameInterval) {
+                clearInterval(gameInterval);
+                gameInterval = null;
+                gameRunning = false;
+            } else {
+                gameRunning = true;
+                gameInterval = setInterval(moveSnake, 200 - (level * 10));
+            }
+        }
+        
+        function resetSnake() {
+            clearInterval(gameInterval);
+            gameRunning = false;
+            snakeGameOver.style.display = 'none';
+            initSnake();
+            drawSnake();
+        }
+        
+        // Controles do teclado para Snake
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                    if (direction !== 'down') nextDirection = 'up';
+                    break;
+                case 'ArrowDown':
+                    if (direction !== 'up') nextDirection = 'down';
+                    break;
+                case 'ArrowLeft':
+                    if (direction !== 'right') nextDirection = 'left';
+                    break;
+                case 'ArrowRight':
+                    if (direction !== 'left') nextDirection = 'right';
+                    break;
+            }
+        });
+        
+        // ==============================================
+        // JOGO TETRIS
+        // ==============================================
+        const tetrisCanvas = document.getElementById('tetris-canvas');
+        const tetrisCtx = tetrisCanvas.getContext('2d');
+        const tetrisScore = document.getElementById('tetris-score');
+        const tetrisLines = document.getElementById('tetris-lines');
+        const tetrisHighscore = document.getElementById('tetris-highscore');
+        const tetrisGameOver = document.getElementById('tetris-game-over');
+        
+        const TETRIS_COLORS = [
+            '#00f3ff', // I - Cyan
+            '#ff003c', // J - Blue
+            '#ffcc00', // L - Orange
+            '#00ff66', // O - Yellow
+            '#cc66ff', // S - Green
+            '#ff6bff', // T - Purple
+            '#ff6b6b'  // Z - Red
+        ];
+        
+        const TETRIS_SHAPES = [
+            [[1, 1, 1, 1]], // I
+            [[1, 0, 0], [1, 1, 1]], // J
+            [[0, 0, 1], [1, 1, 1]], // L
+            [[1, 1], [1, 1]], // O
+            [[0, 1, 1], [1, 1, 0]], // S
+            [[0, 1, 0], [1, 1, 1]], // T
+            [[1, 1, 0], [0, 1, 1]]  // Z
+        ];
+        
+        const COLS = 12;
+        const ROWS = 18;
+        const BLOCK_SIZE = 20;
+        
+        let tetrisBoard = [];
+        let currentPiece = null;
+        let tetrisInterval;
+        let tetrisScoreValue = 0;
+        let tetrisLinesValue = 0;
+        let tetrisHighscoreValue = 0;
+        let tetrisGameRunning = false;
+        
+        function initTetris() {
+            // Inicializar o tabuleiro
+            tetrisBoard = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+            
+            // Resetar estatísticas
+            tetrisScoreValue = 0;
+            tetrisLinesValue = 0;
+            updateTetrisStats();
+            
+            // Criar uma nova peça
+            createNewPiece();
+            
+            // Desenhar o estado inicial
+            drawTetris();
+            
+            tetrisGameOver.style.display = 'none';
+        }
+        
+        function createNewPiece() {
+            const type = Math.floor(Math.random() * TETRIS_SHAPES.length);
+            currentPiece = {
+                shape: TETRIS_SHAPES[type],
+                color: TETRIS_COLORS[type],
+                x: Math.floor(COLS / 2) - 1,
+                y: 0
+            };
+            
+            // Verificar se o jogo acabou
+            if (checkCollision()) {
+                tetrisGameOver.style.display = 'block';
+                clearInterval(tetrisInterval);
+                tetrisGameRunning = false;
+            }
+        }
+        
+        function drawTetris() {
+            // Limpar o canvas
+            tetrisCtx.fillStyle = '#0a0a16';
+            tetrisCtx.fillRect(0, 0, tetrisCanvas.width, tetrisCanvas.height);
+            
+            // Desenhar grade
+            tetrisCtx.strokeStyle = 'rgba(0, 243, 255, 0.1)';
+            tetrisCtx.lineWidth = 0.5;
+            for (let x = 0; x < tetrisCanvas.width; x += BLOCK_SIZE) {
+                tetrisCtx.beginPath();
+                tetrisCtx.moveTo(x, 0);
+                tetrisCtx.lineTo(x, tetrisCanvas.height);
+                tetrisCtx.stroke();
+            }
+            for (let y = 0; y < tetrisCanvas.height; y += BLOCK_SIZE) {
+                tetrisCtx.beginPath();
+                tetrisCtx.moveTo(0, y);
+                tetrisCtx.lineTo(tetrisCanvas.width, y);
+                tetrisCtx.stroke();
+            }
+            
+            // Desenhar peças no tabuleiro
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    if (tetrisBoard[y][x]) {
+                        drawBlock(x, y, TETRIS_COLORS[tetrisBoard[y][x] - 1]);
+                    }
+                }
+            }
+            
+            // Desenhar peça atual
+            if (currentPiece) {
+                currentPiece.shape.forEach((row, y) => {
+                    row.forEach((value, x) => {
+                        if (value) {
+                            drawBlock(currentPiece.x + x, currentPiece.y + y, currentPiece.color);
+                        }
+                    });
+                });
+            }
+        }
+        
+        function drawBlock(x, y, color) {
+            tetrisCtx.fillStyle = color;
+            tetrisCtx.shadowBlur = 10;
+            tetrisCtx.shadowColor = color;
+            tetrisCtx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            tetrisCtx.shadowBlur = 0;
+            
+            // Adicionar borda para destacar os blocos
+            tetrisCtx.strokeStyle = '#0a0a16';
+            tetrisCtx.lineWidth = 1;
+            tetrisCtx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+        }
+        
+        function movePiece(dx, dy) {
+            if (!currentPiece) return;
+            
+            currentPiece.x += dx;
+            currentPiece.y += dy;
+            
+            if (checkCollision()) {
+                currentPiece.x -= dx;
+                currentPiece.y -= dy;
+                
+                // Se foi movimento para baixo, fixar a peça
+                if (dy > 0) {
+                    placePiece();
+                    removeLines();
+                    createNewPiece();
+                }
+                
+                return false;
+            }
+            
+            drawTetris();
+            return true;
+        }
+        
+        function rotatePiece() {
+            if (!currentPiece) return;
+            
+            const originalShape = currentPiece.shape;
+            // Transpor a matriz (girar)
+            const rows = originalShape.length;
+            const cols = originalShape[0].length;
+            const newShape = Array.from({length: cols}, () => Array(rows).fill(0));
+            
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    newShape[x][rows - 1 - y] = originalShape[y][x];
+                }
+            }
+            
+            currentPiece.shape = newShape;
+            
+            // Ajustar posição se necessário
+            if (checkCollision()) {
+                currentPiece.shape = originalShape;
+            } else {
+                drawTetris();
+            }
+        }
+        
+        function checkCollision() {
+            if (!currentPiece) return false;
+            
+            for (let y = 0; y < currentPiece.shape.length; y++) {
+                for (let x = 0; x < currentPiece.shape[y].length; x++) {
+                    if (currentPiece.shape[y][x]) {
+                        const newX = currentPiece.x + x;
+                        const newY = currentPiece.y + y;
+                        
+                        if (
+                            newX < 0 || newX >= COLS ||
+                            newY >= ROWS ||
+                            (newY >= 0 && tetrisBoard[newY][newX])
+                        ) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        function placePiece() {
+            if (!currentPiece) return;
+            
+            currentPiece.shape.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value) {
+                        const boardY = currentPiece.y + y;
+                        if (boardY >= 0) {
+                            tetrisBoard[boardY][currentPiece.x + x] = TETRIS_COLORS.indexOf(currentPiece.color) + 1;
+                        }
+                    }
+                });
+            });
+        }
+        
+        function removeLines() {
+            let linesRemoved = 0;
+            
+            for (let y = ROWS - 1; y >= 0; y--) {
+                if (tetrisBoard[y].every(value => value !== 0)) {
+                    // Remover a linha
+                    tetrisBoard.splice(y, 1);
+                    // Adicionar nova linha no topo
+                    tetrisBoard.unshift(Array(COLS).fill(0));
+                    linesRemoved++;
+                    y++; // Verificar a mesma posição novamente
+                }
+            }
+            
+            if (linesRemoved > 0) {
+                // Atualizar pontuação
+                const points = [0, 100, 300, 500, 800]; // Pontos por número de linhas
+                tetrisScoreValue += points[linesRemoved];
+                tetrisLinesValue += linesRemoved;
+                
+                if (tetrisScoreValue > tetrisHighscoreValue) {
+                    tetrisHighscoreValue = tetrisScoreValue;
+                }
+                
+                updateTetrisStats();
+            }
+        }
+        
+        function updateTetrisStats() {
+            tetrisScore.textContent = tetrisScoreValue;
+            tetrisLines.textContent = tetrisLinesValue;
+            tetrisHighscore.textContent = tetrisHighscoreValue;
+        }
+        
+        function startTetris() {
+            if (tetrisGameRunning) return;
+            
+            initTetris();
+            tetrisGameRunning = true;
+            tetrisInterval = setInterval(() => {
+                movePiece(0, 1);
+            }, 500);
+        }
+        
+        function pauseTetris() {
+            if (!tetrisGameRunning) return;
+            
+            if (tetrisInterval) {
+                clearInterval(tetrisInterval);
+                tetrisInterval = null;
+                tetrisGameRunning = false;
+            } else {
+                tetrisGameRunning = true;
+                tetrisInterval = setInterval(() => {
+                    movePiece(0, 1);
+                }, 500);
+            }
+        }
+        
+        function resetTetris() {
+            clearInterval(tetrisInterval);
+            tetrisGameRunning = false;
+            initTetris();
+        }
+        
+        // Controles do teclado para Tetris
+        document.addEventListener('keydown', (e) => {
+            if (!tetrisGameRunning) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    movePiece(-1, 0);
+                    break;
+                case 'ArrowRight':
+                    movePiece(1, 0);
+                    break;
+                case 'ArrowDown':
+                    movePiece(0, 1);
+                    break;
+                case 'ArrowUp':
+                    rotatePiece();
+                    break;
+            }
+        });
+        
+        // ==============================================
+        // JOGO SPACE DEFENDER
+        // ==============================================
+        const spaceCanvas = document.getElementById('space-canvas');
+        const spaceCtx = spaceCanvas.getContext('2d');
+        const spaceScore = document.getElementById('space-score');
+        const spaceLevel = document.getElementById('space-level');
+        const spaceHighscore = document.getElementById('space-highscore');
+        const spaceGameOver = document.getElementById('space-game-over');
+        
+        let player = {
+            x: spaceCanvas.width / 2 - 15,
+            y: spaceCanvas.height - 40,
+            width: 30,
+            height: 20,
+            speed: 5
+        };
+        
+        let bullets = [];
+        let asteroids = [];
+        let spaceScoreValue = 0;
+        let spaceLevelValue = 1;
+        let spaceHighscoreValue = 0;
+        let spaceGameRunning = false;
+        let spaceInterval;
+        let keys = {};
+        
+        function initSpace() {
+            // Resetar jogador
+            player.x = spaceCanvas.width / 2 - 15;
+            player.y = spaceCanvas.height - 40;
+            
+            // Limpar arrays
+            bullets = [];
+            asteroids = [];
+            
+            // Resetar estatísticas
+            spaceScoreValue = 0;
+            spaceLevelValue = 1;
+            updateSpaceStats();
+            
+            // Criar alguns asteroides iniciais
+            for (let i = 0; i < 5; i++) {
+                createAsteroid();
+            }
+            
+            // Desenhar estado inicial
+            drawSpace();
+            
+            spaceGameOver.style.display = 'none';
+        }
+        
+        function createAsteroid() {
+            const size = Math.random() * 20 + 10;
+            asteroids.push({
+                x: Math.random() * (spaceCanvas.width - size),
+                y: -size,
+                width: size,
+                height: size,
+                speed: Math.random() * 2 + 1,
+                rotation: Math.random() * Math.PI * 2
+            });
+        }
+        
+        function drawSpace() {
+            // Limpar canvas
+            spaceCtx.fillStyle = '#0a0a16';
+            spaceCtx.fillRect(0, 0, spaceCanvas.width, spaceCanvas.height);
+            
+            // Desenhar estrelas de fundo
+            spaceCtx.fillStyle = '#00f3ff';
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * spaceCanvas.width;
+                const y = Math.random() * spaceCanvas.height;
+                const size = Math.random() * 2;
+                spaceCtx.fillRect(x, y, size, size);
+            }
+            
+            // Desenhar jogador (nave)
+            spaceCtx.fillStyle = '#00f3ff';
+            spaceCtx.beginPath();
+            spaceCtx.moveTo(player.x, player.y + player.height);
+            spaceCtx.lineTo(player.x + player.width / 2, player.y);
+            spaceCtx.lineTo(player.x + player.width, player.y + player.height);
+            spaceCtx.closePath();
+            spaceCtx.fill();
+            
+            // Desenhar balas
+            spaceCtx.fillStyle = '#ff003c';
+            bullets.forEach(bullet => {
+                spaceCtx.beginPath();
+                spaceCtx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2);
+                spaceCtx.fill();
+            });
+            
+            // Desenhar asteroides
+            asteroids.forEach(asteroid => {
+                spaceCtx.save();
+                spaceCtx.translate(asteroid.x + asteroid.width / 2, asteroid.y + asteroid.height / 2);
+                spaceCtx.rotate(asteroid.rotation);
+                
+                spaceCtx.fillStyle = '#ffcc00';
+                spaceCtx.beginPath();
+                spaceCtx.moveTo(0, -asteroid.height / 2);
+                for (let i = 1; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const radius = asteroid.width / 2 * (0.8 + Math.random() * 0.4);
+                    spaceCtx.lineTo(
+                        Math.cos(angle) * radius,
+                        Math.sin(angle) * radius
+                    );
+                }
+                spaceCtx.closePath();
+                spaceCtx.fill();
+                
+                spaceCtx.restore();
+            });
+        }
+        
+        function updateSpace() {
+            // Mover jogador
+            if (keys['ArrowLeft'] && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (keys['ArrowRight'] && player.x + player.width < spaceCanvas.width) {
+                player.x += player.speed;
+            }
+            
+            // Mover balas
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                bullets[i].y -= 7;
+                
+                // Remover balas que saíram da tela
+                if (bullets[i].y < 0) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+                
+                // Verificar colisões com asteroides
+                for (let j = asteroids.length - 1; j >= 0; j--) {
+                    if (
+                        bullets[i] &&
+                        bullets[i].x > asteroids[j].x &&
+                        bullets[i].x < asteroids[j].x + asteroids[j].width &&
+                        bullets[i].y > asteroids[j].y &&
+                        bullets[i].y < asteroids[j].y + asteroids[j].height
+                    ) {
+                        // Colisão detectada
+                        spaceScoreValue += 10;
+                        if (spaceScoreValue > spaceHighscoreValue) {
+                            spaceHighscoreValue = spaceScoreValue;
+                        }
+                        updateSpaceStats();
+                        
+                        // Remover asteroide e bala
+                        asteroids.splice(j, 1);
+                        bullets.splice(i, 1);
+                        
+                        // Criar novo asteroide
+                        createAsteroid();
+                        break;
+                    }
+                }
+            }
+            
+            // Mover asteroides
+            for (let i = asteroids.length - 1; i >= 0; i--) {
+                asteroids[i].y += asteroids[i].speed;
+                asteroids[i].rotation += 0.02;
+                
+                // Verificar se o asteroide saiu da tela
+                if (asteroids[i].y > spaceCanvas.height) {
+                    asteroids.splice(i, 1);
+                    createAsteroid();
+                    continue;
+                }
+                
+                // Verificar colisão com o jogador
+                if (
+                    player.x < asteroids[i].x + asteroids[i].width &&
+                    player.x + player.width > asteroids[i].x &&
+                    player.y < asteroids[i].y + asteroids[i].height &&
+                    player.y + player.height > asteroids[i].y
+                ) {
+                    // Game over
+                    clearInterval(spaceInterval);
+                    spaceGameRunning = false;
+                    spaceGameOver.style.display = 'block';
+                    return;
+                }
+            }
+            
+            // Aumentar dificuldade com base na pontuação
+            if (spaceScoreValue >= spaceLevelValue * 100) {
+                spaceLevelValue++;
+                updateSpaceStats();
+            }
+            
+            drawSpace();
+        }
+        
+        function shoot() {
+            bullets.push({
+                x: player.x + player.width / 2,
+                y: player.y
+            });
+        }
+        
+        function updateSpaceStats() {
+            spaceScore.textContent = spaceScoreValue;
+            spaceLevel.textContent = spaceLevelValue;
+            spaceHighscore.textContent = spaceHighscoreValue;
+        }
+        
+        function startSpace() {
+            if (spaceGameRunning) return;
+            
+            initSpace();
+            spaceGameRunning = true;
+            spaceInterval = setInterval(updateSpace, 1000 / 60);
+        }
+        
+        function pauseSpace() {
+            if (!spaceGameRunning) return;
+            
+            if (spaceInterval) {
+                clearInterval(spaceInterval);
+                spaceInterval = null;
+                spaceGameRunning = false;
+            } else {
+                spaceGameRunning = true;
+                spaceInterval = setInterval(updateSpace, 1000 / 60);
+            }
+        }
+        
+        function resetSpace() {
+            clearInterval(spaceInterval);
+            spaceGameRunning = false;
+            initSpace();
+        }
+        
+        // Controles do teclado para Space Defender
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            if (e.key === ' ' && spaceGameRunning) {
+                shoot();
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        // ==============================================
+        // CONFIGURAÇÃO DE BOTÕES
+        // ==============================================
+        document.getElementById('snake-start').addEventListener('click', startSnake);
+        document.getElementById('snake-pause').addEventListener('click', pauseSnake);
+        document.getElementById('snake-reset').addEventListener('click', resetSnake);
+        
+        document.getElementById('tetris-start').addEventListener('click', startTetris);
+        document.getElementById('tetris-pause').addEventListener('click', pauseTetris);
+        document.getElementById('tetris-reset').addEventListener('click', resetTetris);
+        
+        document.getElementById('space-start').addEventListener('click', startSpace);
+        document.getElementById('space-pause').addEventListener('click', pauseSpace);
+        document.getElementById('space-reset').addEventListener('click', resetSpace);
+        
+        // ==============================================
+        // INICIALIZAÇÃO
+        // ==============================================
+        window.onload = function() {
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            initSnake();
+            initTetris();
+            initSpace();
+        };
+    </script>
+</body>
+</html>
+    <script src="auth.js"></script>
+
+

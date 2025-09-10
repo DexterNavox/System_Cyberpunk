@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Administração - Sistema Cyberpunk</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        body {
+            background-color: #0a0a16;
+            color: #00f3ff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to bottom, 
+                        rgba(0, 243, 255, 0.5), 
+                        rgba(0, 243, 255, 0));
+            box-shadow: 0 0 10px #00f3ff;
+            animation: scan 4s linear infinite;
+            z-index: 100;
+        }
+        
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+        
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDBoNDB2NDBIMHoiLz48L3N2Zz4=');
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        .grid-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+            background-image: 
+                linear-gradient(to right, #00f3ff 1px, transparent 1px),
+                linear-gradient(to bottom, #00f3ff 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-bottom: 1px solid #00f3ff;
+            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.2);
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #ff003c;
+            text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c;
+            animation: glitch 5s infinite;
+        }
+        
+        .subtitle {
+            color: #00f3ff;
+            font-size: 1.2rem;
+            letter-spacing: 0.3em;
+        }
+        
+        @keyframes glitch {
+            0% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+            95% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+            96% { text-shadow: -2px 0 0 cyan, 2px 0 0 magenta; }
+            97% { text-shadow: 2px 0 0 cyan, -2px 0 0 magenta; }
+            98% { text-shadow: -2px 0 0 cyan, 2px 0 0 magenta; }
+            99% { text-shadow: 2px 0 0 cyan, -2px 0 0 magenta; }
+            100% { text-shadow: 0 0 10px #ff003c, 0 0 20px #ff003c; }
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .nav-item {
+            color: #00f3ff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 15px #00f3ff;
+        }
+        
+        .admin-dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .admin-sidebar {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .admin-sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .panel-header {
+            color: #ff003c;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            padding: 1rem;
+            text-shadow: 0 0 5px #ff003c;
+            border-bottom: 1px solid #00f3ff;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .admin-menu {
+            list-style: none;
+            padding: 1rem 0;
+            flex: 1;
+        }
+        
+        .menu-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            border-left: 3px solid transparent;
+        }
+        
+        .menu-item:hover {
+            background-color: rgba(0, 243, 255, 0.1);
+            border-left-color: #00f3ff;
+        }
+        
+        .menu-item.active {
+            background-color: rgba(0, 243, 255, 0.2);
+            border-left-color: #ff003c;
+        }
+        
+        .menu-icon {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .admin-status {
+            padding: 1rem;
+            border-top: 1px solid #00f3ff;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .status-label {
+            color: #ff003c;
+        }
+        
+        .status-value {
+            color: #00f3ff;
+        }
+        
+        .admin-content {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 15px #00f3ff;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .admin-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .content-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #00f3ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .content-title {
+            color: #ff003c;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+        }
+        
+        .content-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .action-btn {
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            background: rgba(0, 243, 255, 0.4);
+            box-shadow: 0 0 10px #00f3ff;
+        }
+        
+        .action-btn.warning {
+            background: rgba(255, 204, 0, 0.2);
+            border-color: #ffcc00;
+        }
+        
+        .action-btn.warning:hover {
+            background: rgba(255, 204, 0, 0.4);
+            box-shadow: 0 0 10px #ffcc00;
+        }
+        
+        .action-btn.danger {
+            background: rgba(255, 0, 60, 0.2);
+            border-color: #ff003c;
+        }
+        
+        .action-btn.danger:hover {
+            background: rgba(255, 0, 60, 0.4);
+            box-shadow: 0 0 10px #ff003c;
+        }
+        
+        .content-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00f3ff;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.3);
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            color: #00f3ff;
+            margin-bottom: 0.5rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .stat-label {
+            color: #ff003c;
+            font-size: 0.9rem;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+        
+        .data-table th {
+            background-color: rgba(0, 243, 255, 0.1);
+            color: #ff003c;
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #00f3ff;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+            color: #00f3ff;
+        }
+        
+        .data-table tr:hover {
+            background-color: rgba(0, 243, 255, 0.1);
+        }
+        
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        
+        .status-active {
+            background-color: rgba(0, 255, 102, 0.2);
+            color: #00ff66;
+        }
+        
+        .status-inactive {
+            background-color: rgba(255, 0, 60, 0.2);
+            color: #ff003c;
+        }
+        
+        .status-warning {
+            background-color: rgba(255, 204, 0, 0.2);
+            color: #ffcc00;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .table-btn {
+            background: none;
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 0.3rem 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.8rem;
+        }
+        
+        .table-btn:hover {
+            background: rgba(0, 243, 255, 0.2);
+        }
+        
+        .chart-container {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00f3ff;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            height: 300px;
+        }
+        
+        .chart-title {
+            color: #ff003c;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #00f3ff;
+            padding-bottom: 0.5rem;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 250px;
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+        }
+        
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, #00f3ff, #ff003c);
+            opacity: 0.8;
+            position: relative;
+        }
+        
+        .chart-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #00f3ff;
+            font-size: 0.8rem;
+        }
+        
+        .system-logs {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00f3ff;
+            padding: 1.5rem;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        .log-entry {
+            margin-bottom: 0.8rem;
+            padding-left: 1rem;
+            border-left: 2px solid #ff003c;
+        }
+        
+        .log-time {
+            color: #ff003c;
+            margin-right: 1rem;
+        }
+        
+        .log-message {
+            color: #00f3ff;
+        }
+        
+        .log-error {
+            border-left-color: #ff003c;
+        }
+        
+        .log-warning {
+            border-left-color: #ffcc00;
+        }
+        
+        .log-success {
+            border-left-color: #00ff66;
+        }
+        
+        .log-info {
+            border-left-color: #00f3ff;
+        }
+        
+        .hud {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+        
+        .hud-item {
+            background: rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            padding: 10px 15px;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+        
+        .clock {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: #ff003c;
+            text-shadow: 0 0 5px #ff003c;
+            z-index: 1000;
+        }
+        
+        .cyber-logo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 10px #00f3ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: rotate 10s linear infinite;
+            z-index: 1000;
+        }
+        
+        .cyber-logo::before {
+            content: 'Δ';
+            font-size: 2rem;
+            color: #ff003c;
+            text-shadow: 0 0 5px #ff003c;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 1200px) {
+            .admin-dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-sidebar {
+                display: none;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .content-actions {
+                flex-wrap: wrap;
+            }
+            
+            .data-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+    <div class="scanline"></div>
+    <div class="grid-lines"></div>
+    <div class="cyber-logo"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>ADMINISTRAÇÃO</h1>
+                <div class="subtitle">CONTROLE DO SISTEMA • NÍVEL 5</div>
+            </div>
+            
+            <div class="nav-menu">
+                 <a href="acesso.html" class="nav-item">GERAL</a>
+                <a href="arquivos.html" class="nav-item">ARQUIVOS</a>
+                <a href="terminal.html" class="nav-item">TERMINAL</a>
+                <a href="rede.html" class="nav-item">REDE</a>
+                <a href="mensagem.html" class="nav-item">MENSAGENS</a>
+                <a href="painel.html" class="nav-item active">ADMIN</a>
+            </div>
+        </div>
+        
+        <div class="admin-dashboard">
+            <div class="admin-sidebar">
+                <div class="panel-header">MENU ADMIN</div>
+                
+                <ul class="admin-menu">
+                    <li class="menu-item active" data-tab="overview">
+                        <span class="menu-icon">⦿</span> Visão Geral
+                    </li>
+                    <li class="menu-item" data-tab="users">
+                        <span class="menu-icon">⦿</span> Usuários
+                    </li>
+                    <li class="menu-item" data-tab="security">
+                        <span class="menu-icon">⦿</span> Segurança
+                    </li>
+                    <li class="menu-item" data-tab="system">
+                        <span class="menu-icon">⦿</span> Sistema
+                    </li>
+                    <li class="menu-item" data-tab="logs">
+                        <span class="menu-icon">⦿</span> Logs
+                    </li>
+                    <li class="menu-item" data-tab="settings">
+                        <span class="menu-icon">⦿</span> Configurações
+                    </li>
+                    <li class="menu-item" data-tab="backup">
+                        <span class="menu-icon">⦿</span> Backup
+                    </li>
+                </ul>
+                
+                <div class="admin-status">
+                    <div class="status-item">
+                        <span class="status-label">Status:</span>
+                        <span class="status-value">Online</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Uptime:</span>
+                        <span class="status-value">14d 8h 32m</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Carga:</span>
+                        <span class="status-value">42%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="admin-content">
+                <div class="content-header">
+                    <div class="content-title">VISÃO GERAL DO SISTEMA</div>
+                    <div class="content-actions">
+                        <button class="action-btn">ATUALIZAR</button>
+                        <button class="action-btn warning">VERIFICAR</button>
+                        <button class="action-btn danger">REINICIAR</button>
+                    </div>
+                </div>
+                
+                <div class="content-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">👤</div>
+                            <div class="stat-value">247</div>
+                            <div class="stat-label">USUÁRIOS ATIVOS</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">🔒</div>
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">TENTATIVAS DE INVASÃO</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">💾</div>
+                            <div class="stat-value">78%</div>
+                            <div class="stat-label">ARMAZENAMENTO</div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-value">2.4GB/s</div>
+                            <div class="stat-label">TRÁFEGO DE REDE</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">USO DE RECURSOS</div>
+                        <div class="chart" id="resource-chart">
+                            <div class="chart-bar" style="height: 65%;">
+                                <div class="chart-label">CPU</div>
+                            </div>
+                            <div class="chart-bar" style="height: 78%;">
+                                <div class="chart-label">RAM</div>
+                            </div>
+                            <div class="chart-bar" style="height: 45%;">
+                                <div class="chart-label">REDE</div>
+                            </div>
+                            <div class="chart-bar" style="height: 82%;">
+                                <div class="chart-label">DISCO</div>
+                            </div>
+                            <div class="chart-bar" style="height: 30%;">
+                                <div class="chart-label">GPU</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">ATIVIDADE DO SISTEMA</div>
+                        <div class="chart" id="activity-chart">
+                            <div class="chart-bar" style="height: 80%;">
+                                <div class="chart-label">08:00</div>
+                            </div>
+                            <div class="chart-bar" style="height: 65%;">
+                                <div class="chart-label">10:00</div>
+                            </div>
+                            <div class="chart-bar" style="height: 90%;">
+                                <div class="chart-label">12:00</div>
+                            </div>
+                            <div class="chart-bar" style="height: 75%;">
+                                <div class="chart-label">14:00</div>
+                            </div>
+                            <div class="chart-bar" style="height: 85%;">
+                                <div class="chart-label">16:00</div>
+                            </div>
+                            <div class="chart-bar" style="height: 60%;">
+                                <div class="chart-label">18:00</div>
+                            </div>
+                            <div class="chart-bar" style="height: 40%;">
+                                <div class="chart-label">20:00</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Serviço</th>
+                                <th>Status</th>
+                                <th>CPU</th>
+                                <th>Memória</th>
+                                <th>Uptime</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Servidor Web</td>
+                                <td><span class="status-badge status-active">ATIVO</span></td>
+                                <td>24%</td>
+                                <td>512MB</td>
+                                <td>8d 12h</td>
+                                <td class="table-actions">
+                                    <button class="table-btn">Reiniciar</button>
+                                    <button class="table-btn">Logs</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Banco de Dados</td>
+                                <td><span class="status-badge status-active">ATIVO</span></td>
+                                <td>68%</td>
+                                <td>2.1GB</td>
+                                <td>14d 8h</td>
+                                <td class="table-actions">
+                                    <button class="table-btn">Reiniciar</button>
+                                    <button class="table-btn">Logs</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Servidor de Segurança</td>
+                                <td><span class="status-badge status-warning">ALERTA</span></td>
+                                <td>92%</td>
+                                <td>1.2GB</td>
+                                <td>2d 4h</td>
+                                <td class="table-actions">
+                                    <button class="table-btn">Reiniciar</button>
+                                    <button class="table-btn">Logs</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Serviço de Backup</td>
+                                <td><span class="status-badge status-inactive">INATIVO</span></td>
+                                <td>0%</td>
+                                <td>0MB</td>
+                                <td>N/A</td>
+                                <td class="table-actions">
+                                    <button class="table-btn">Iniciar</button>
+                                    <button class="table-btn">Logs</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>API Principal</td>
+                                <td><span class="status-badge status-active">ATIVO</span></td>
+                                <td>35%</td>
+                                <td>876MB</td>
+                                <td>6d 18h</td>
+                                <td class="table-actions">
+                                    <button class="table-btn">Reiniciar</button>
+                                    <button class="table-btn">Logs</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="system-logs">
+                        <div class="log-entry log-info">
+                            <span class="log-time">[2023-10-27 04:32:18]</span>
+                            <span class="log-message">Sistema de administração inicializado</span>
+                        </div>
+                        <div class="log-entry log-success">
+                            <span class="log-time">[2023-10-27 04:33:45]</span>
+                            <span class="log-message">Todos os serviços críticos verificados e operacionais</span>
+                        </div>
+                        <div class="log-entry log-warning">
+                            <span class="log-time">[2023-10-27 04:35:12]</span>
+                            <span class="log-message">Alerta: Uso de CPU do servidor de segurança acima de 90%</span>
+                        </div>
+                        <div class="log-entry log-error">
+                            <span class="log-time">[2023-10-27 04:36:28]</span>
+                            <span class="log-message">Erro: Serviço de backup não responde</span>
+                        </div>
+                        <div class="log-entry log-info">
+                            <span class="log-time">[2023-10-27 04:37:53]</span>
+                            <span class="log-message">Verificação de segurança programada para 05:00</span>
+                        </div>
+                        <div class="log-entry log-success">
+                            <span class="log-time">[2023-10-27 04:39:17]</span>
+                            <span class="log-message">Backup automático iniciado com sucesso</span>
+                        </div>
+                        <div class="log-entry log-info">
+                            <span class="log-time">[2023-10-27 04:40:42]</span>
+                            <span class="log-message">Monitoramento de rede ativo - 0 ameaças detectadas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="hud">
+        <div class="hud-item">SISTEMA ATIVO</div>
+        <div class="hud-item">MODO: ADMINISTRAÇÃO</div>
+    </div>
+    
+    <div class="clock" id="clock">00:00:00</div>
+
+    <script>
+        // Dados para gráficos
+        const resourceData = [65, 78, 45, 82, 30];
+        const activityData = [80, 65, 90, 75, 85, 60, 40];
+        
+        // Atualizar relógio
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // Animar gráficos
+        function animateCharts() {
+            const resourceBars = document.querySelectorAll('#resource-chart .chart-bar');
+            const activityBars = document.querySelectorAll('#activity-chart .chart-bar');
+            
+            // Animar gráfico de recursos
+            resourceBars.forEach((bar, index) => {
+                setTimeout(() => {
+                    bar.style.height = `${resourceData[index]}%`;
+                }, index * 200);
+            });
+            
+            // Animar gráfico de atividade
+            activityBars.forEach((bar, index) => {
+                setTimeout(() => {
+                    bar.style.height = `${activityData[index]}%`;
+                }, index * 150);
+            });
+            
+            // Animar continuamente
+            setInterval(() => {
+                // Atualizar dados de recursos aleatoriamente
+                resourceBars.forEach((bar, index) => {
+                    const change = Math.random() * 10 - 5; // -5 to +5
+                    const newValue = Math.max(10, Math.min(95, resourceData[index] + change));
+                    resourceData[index] = newValue;
+                    bar.style.height = `${newValue}%`;
+                });
+                
+                // Atualizar dados de atividade aleatoriamente
+                activityBars.forEach((bar, index) => {
+                    const change = Math.random() * 15 - 7.5; // -7.5 to +7.5
+                    const newValue = Math.max(20, Math.min(95, activityData[index] + change));
+                    activityData[index] = newValue;
+                    bar.style.height = `${newValue}%`;
+                });
+            }, 5000);
+        }
+        
+        // Alternar entre abas do menu
+        function setupMenuTabs() {
+            const menuItems = document.querySelectorAll('.menu-item');
+            const contentTitle = document.querySelector('.content-title');
+            
+            menuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    // Remover classe active de todos os itens
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    // Adicionar classe active ao item clicado
+                    item.classList.add('active');
+                    
+                    // Atualizar título do conteúdo
+                    const tabName = item.dataset.tab;
+                    contentTitle.textContent = item.textContent.trim().toUpperCase();
+                    
+                    // Aqui você pode carregar conteúdo diferente para cada aba
+                    // Por simplicidade, estamos apenas mudando o título
+                });
+            });
+        }
+        
+        // Simular atualização de logs em tempo real
+        function simulateLiveLogs() {
+            const logContainer = document.querySelector('.system-logs');
+            const logTypes = ['log-info', 'log-success', 'log-warning', 'log-error'];
+            const logMessages = [
+                "Verificação de integridade do sistema concluída",
+                "Novo dispositivo detectado na rede",
+                "Atualização de segurança disponível",
+                "Tentativa de acesso não autorizado bloqueada",
+                "Backup incremental realizado com sucesso",
+                "Alerta: Uso de memória acima do limite",
+                "Sincronização com nuvem concluída",
+                "Varredura de vírus em andamento",
+                "Otimização de desempenho aplicada",
+                "Relatório de auditoria gerado"
+            ];
+            
+            setInterval(() => {
+                if (Math.random() > 0.7) { // 30% chance de adicionar novo log
+                    const now = new Date();
+                    const time = `[${now.toLocaleDateString()} ${now.toLocaleTimeString()}]`;
+                    const type = logTypes[Math.floor(Math.random() * logTypes.length)];
+                    const message = logMessages[Math.floor(Math.random() * logMessages.length)];
+                    
+                    const logEntry = document.createElement('div');
+                    logEntry.classList.add('log-entry', type);
+                    logEntry.innerHTML = `<span class="log-time">${time}</span><span class="log-message">${message}</span>`;
+                    
+                    logContainer.appendChild(logEntry);
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                    
+                    // Manter apenas os 10 logs mais recentes
+                    if (logContainer.children.length > 10) {
+                        logContainer.removeChild(logContainer.children[0]);
+                    }
+                }
+            }, 3000);
+        }
+        
+        // Configurar botões de ação
+        function setupActionButtons() {
+            const actionButtons = document.querySelectorAll('.action-btn');
+            
+            actionButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const originalText = button.textContent;
+                    
+                    if (button.classList.contains('danger')) {
+                        button.textContent = 'CONFIRMAR?';
+                        button.style.backgroundColor = 'rgba(255, 0, 60, 0.4)';
+                        
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                            button.style.backgroundColor = '';
+                        }, 2000);
+                    } else {
+                        button.textContent = 'EXECUTANDO...';
+                        
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                        }, 1500);
+                    }
+                });
+            });
+        }
+        
+        // Inicializar
+        window.onload = function() {
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            animateCharts();
+            setupMenuTabs();
+            simulateLiveLogs();
+            setupActionButtons();
+        };
+    </script>
+</body>
+</html>
+
+    <script src="auth.js"></script>
+
+
