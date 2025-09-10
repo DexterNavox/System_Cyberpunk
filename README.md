@@ -161,4 +161,8 @@ Para utilizar este projeto, basta abrir o arquivo `index.html` em qualquer naveg
 Este projeto é distribuído sob a licença MIT. Sinta-se à vontade para usar, modificar e distribuir o código, desde que a licença original seja incluída.
 
 
+Preview
+<img width="1279" height="946" alt="image" src="https://github.com/user-attachments/assets/dbe34548-e68d-4413-b37a-4f583be45728" />
+
+
 
